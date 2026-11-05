@@ -1,5 +1,5 @@
 using Products.API.Data;
-using Products.API.Models;
+using Products.API.DTOs;
 
 namespace Products.API.Extensions.Endpoints;
 

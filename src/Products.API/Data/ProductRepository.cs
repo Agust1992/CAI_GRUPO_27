@@ -1,5 +1,6 @@
 using Dapper;
 using Microsoft.Data.Sqlite;
+using Products.API.DTOs;
 using Products.API.Models;
 
 namespace Products.API.Data;

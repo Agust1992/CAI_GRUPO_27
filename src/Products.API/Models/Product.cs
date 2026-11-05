@@ -11,19 +11,3 @@ public record Product
     public string CreatedAt { get; init; } = string.Empty;
     public string? UpdatedAt { get; init; }
 }
-
-public record CreateProductRequest(
-    string Name,
-    string? Description,
-    decimal Price,
-    int Stock,
-    string? Category
-);
-
-public record UpdateProductRequest(
-    string Name,
-    string? Description,
-    decimal Price,
-    int Stock,
-    string? Category
-);
