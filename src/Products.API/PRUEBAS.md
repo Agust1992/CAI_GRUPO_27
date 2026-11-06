@@ -30,6 +30,8 @@ separada, sin tocar `products.db`.
   un ID con formato incorrecto devuelve 400 con PRD-002.
 - PUT `/api/products/{id}`: 200 con el producto actualizado o 404 con PRD-001.
 - DELETE `/api/products/{id}`: 204 o 404 con PRD-001.
+- Antes de borrar se consulta Orders: una referencia Pendiente o Confirmada
+  devuelve 409 PRD-004. Si Orders falla, devuelve PRD-005 y no se borra.
 - Datos invalidos, JSON mal formado o campos obligatorios ausentes: 400 con
   PRD-002. El stock debe estar presente; cero es valido.
 - Nombre y categoria iguales a otro producto: 409 con PRD-003. La comparacion
@@ -40,6 +42,17 @@ separada, sin tocar `products.db`.
 
 Los errores incluyen ProblemDetails, errorCode, errorMessage y correlationId.
 Las excepciones y sus handlers siguen el ejemplo del apendice B de la consigna.
+Tambien se formatean los errores HTTP del framework: 405 y 415 conservan su
+estado HTTP y usan PRD-002 para identificar una solicitud invalida. No se crean
+codigos nuevos fuera del catalogo. Los cuerpos son application/problem+json.
+
+Productos conserva un X-Correlation-Id valido recibido, lo devuelve y lo envia
+a Orders. Serilog registra inicio/fin y duracion, con Service, Endpoint y
+CorrelationId. Los errores de negocio son Warning y los inesperados Error.
+Los archivos son JSON estructurado; ya no se guardan cuerpos de solicitudes.
+
+Swagger incorpora comentarios XML, esquemas con los campos propios de error y
+ejemplos JSON de alta, modificacion, listado, detalle y errores, incluido PRD-004.
 
 ## Contrato de productos
 
@@ -109,14 +122,16 @@ El ejemplo para los otros integrantes esta en `docs/EJEMPLO_SALUD.md`.
 
 ## Pendientes antes de integrar con los otros servicios
 
-- Borrado condicionado a ordenes Pendiente o Confirmada: PRD-004 aun no esta
-  implementado. No tomar el DELETE actual como la regla final.
-- Acordar con Christian el formato comun y la propagacion de X-Correlation-Id.
-  El campo actual usa TraceIdentifier, pero no hay trazabilidad entre servicios.
-- Completar Swagger con XML comments y ejemplos y logging JSON, siguiendo el
-  reparto del equipo. Cada integrante adapta y verifica los controles de salud
-  en sus propios servicios.
-- Revisar las advertencias de KubernetesClient y SQLitePCLRaw.lib.e_sqlite3.
+- Verificar la consulta y la correlacion con Orders.API real de Christian.
+  El contrato usado esta en docs/INTEGRACION_ORDERS.md.
+- Revisar con Agustin y Christian la convencion comun de logs y errores.
+- Cada integrante adapta y verifica los controles de salud en sus servicios.
+- Confirmar la libreria de persistencia de la catedra y obtener capturas para
+  la entrega.
+
+Las pruebas repetibles estan en tests/ProbarProductos.ps1 y no usan datos de
+trabajo. Para cerrar los avisos de dependencias se actualizaron
+Microsoft.Data.Sqlite a 10.0.14 y KubernetesClient a 17.0.14, sin suprimirlos.
 
 La ruta anterior `/products` se reemplazo por `/api/products`; no hay dos juegos
 de endpoints en paralelo. No se modificaron MiniApi, Orders, Users, Cart ni

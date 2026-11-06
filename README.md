@@ -70,6 +70,11 @@ Los IDs de productos son Guid. El JSON usa `nombre`, `descripcion`, `precio`,
 Los ejemplos y las pruebas estan en `src/Products.API/Products.API.http` y
 `src/Products.API/PRUEBAS.md`.
 
+El borrado consulta Orders antes de eliminar. Configurar `Services:Orders`
+(propuesta local: puerto 5103). Si Orders no esta disponible, el producto se
+conserva y se devuelve PRD-005. El contrato para coordinar con Christian esta
+en `docs/INTEGRACION_ORDERS.md`.
+
 `/health/live` comprueba el proceso y `/health/ready` la base de Productos.
 Si la base no esta disponible, ready devuelve 503 aunque live siga respondiendo
 200. El ejemplo para adaptar en los otros servicios esta en
@@ -101,7 +106,10 @@ definitivo con el grupo y cerrar los ejemplos de Swagger y las evidencias.
 
 - Agregar Users.API, Orders.API y Notifications.API.
 - Documentar puertos.
-- Completar Productos: restriccion de borrado por ordenes activas (PRD-004),
-  documentacion Swagger y tareas transversales de logging y correlacion.
+- Probar el borrado de Productos con Orders real y revisar los contratos
+  transversales con el grupo. La logica y las pruebas con dependencia simulada
+  estan implementadas.
 - Subir capturas de Swagger cuando vayamos probando.
+
+Las pruebas HTTP repetibles y sus requisitos estan en `tests/README.md`.
 

@@ -8,10 +8,12 @@ namespace Products.API.Services;
 public class ProductoService
 {
     private readonly ProductRepository _repository;
+    private readonly OrdersClient _orders;
 
-    public ProductoService(ProductRepository repository)
+    public ProductoService(ProductRepository repository, OrdersClient orders)
     {
         _repository = repository;
+        _orders = orders;
     }
 
     public async Task<List<Product>> ListarAsync(string? nombre, string? categoria)
@@ -92,6 +94,12 @@ public class ProductoService
 
     public async Task EliminarAsync(Guid id)
     {
+        await BuscarAsync(id);
+        if (await _orders.TieneOrdenActivaAsync(id))
+        {
+            throw new BusinessRuleException("PRD-004",
+                "El producto tiene ordenes activas y no puede eliminarse.");
+        }
         bool eliminado = await _repository.DeleteAsync(id);
         if (!eliminado)
         {

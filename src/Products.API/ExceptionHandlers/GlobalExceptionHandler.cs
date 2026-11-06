@@ -19,7 +19,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             return false;
         }
 
-        _logger.LogError(exception, "PRD-005: Error inesperado en Productos");
+        _logger.LogError(exception, "{errorCode}: Error inesperado en Productos", "PRD-005");
         await RespuestaError.EscribirAsync(context, 500, "PRD-005",
             "Error interno al procesar el producto.", cancellationToken);
         return true;

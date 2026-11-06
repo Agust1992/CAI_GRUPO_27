@@ -20,7 +20,7 @@ public class NotFoundExceptionHandler : IExceptionHandler
             return false;
         }
 
-        _logger.LogWarning("{ErrorCode}: {Mensaje}", error.ErrorCode, error.Message);
+        _logger.LogWarning("{errorCode}: {Mensaje}", error.ErrorCode, error.Message);
         await RespuestaError.EscribirAsync(context, 404, error.ErrorCode, error.Message, cancellationToken);
         return true;
     }

@@ -1,8 +1,10 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Products.API.ExceptionHandlers;
 using Products.API.Middleware;
 using Serilog;
+using Serilog.Events;
 
 namespace Products.API.Extensions;
 
@@ -10,25 +12,35 @@ public static class MiddlewareExtensions
 {
     public static void UseAppMiddleware(this WebApplication app)
     {
+        app.UseMiddleware<CorrelationIdMiddleware>();
+        app.UseSerilogRequestLogging(options =>
+        {
+            options.GetLevel = (context, _, exception) =>
+            {
+                if (exception != null || context.Response.StatusCode >= 500)
+                {
+                    return LogEventLevel.Error;
+                }
+                if (context.Response.StatusCode >= 400)
+                {
+                    return LogEventLevel.Warning;
+                }
+                return LogEventLevel.Information;
+            };
+        });
         app.UseExceptionHandler();
-
+        app.UseStatusCodePages(async statusContext =>
+        {
+            var context = statusContext.HttpContext;
+            var problema = RespuestaError.CrearErrorHttp(context, context.Response.StatusCode);
+            await RespuestaError.EscribirAsync(context, context.Response.StatusCode,
+                problema.ErrorCode, problema.ErrorMessage, context.RequestAborted);
+        });
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
-        app.UseSerilogRequestLogging(options =>
-        {
-            options.GetLevel = (httpContext, _, exception) =>
-                exception is not null
-                    ? Serilog.Events.LogEventLevel.Error
-                    : httpContext.Request.Path.StartsWithSegments("/health")
-                        ? Serilog.Events.LogEventLevel.Verbose
-                        : Serilog.Events.LogEventLevel.Information;
-        });
-
-        app.UseMiddleware<AuditMiddleware>();
 
         app.MapHealthChecks("/health", new HealthCheckOptions
         {
