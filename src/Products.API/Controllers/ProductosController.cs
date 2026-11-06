@@ -28,8 +28,9 @@ public class ProductosController : ControllerBase
 
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Buscar(int id)
+    public async Task<IActionResult> Buscar(Guid id)
     {
         var producto = await _service.BuscarAsync(id);
         return Ok(producto);
@@ -39,7 +40,7 @@ public class ProductosController : ControllerBase
     [ProducesResponseType(typeof(Product), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Crear(CreateProductRequest request)
+    public async Task<IActionResult> Crear(CrearProductoRequest request)
     {
         var producto = await _service.CrearAsync(request);
         return CreatedAtAction(nameof(Buscar), new { id = producto.Id }, producto);
@@ -50,7 +51,7 @@ public class ProductosController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Actualizar(int id, UpdateProductRequest request)
+    public async Task<IActionResult> Actualizar(Guid id, ActualizarProductoRequest request)
     {
         var producto = await _service.ActualizarAsync(id, request);
         return Ok(producto);
@@ -58,8 +59,9 @@ public class ProductosController : ControllerBase
 
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Eliminar(int id)
+    public async Task<IActionResult> Eliminar(Guid id)
     {
         await _service.EliminarAsync(id);
         return NoContent();

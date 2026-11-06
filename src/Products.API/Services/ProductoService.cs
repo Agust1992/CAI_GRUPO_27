@@ -22,13 +22,13 @@ public class ProductoService
         foreach (Product producto in productos)
         {
             if (!string.IsNullOrWhiteSpace(nombre) &&
-                !producto.Name.Contains(nombre, StringComparison.OrdinalIgnoreCase))
+                !producto.Nombre.Contains(nombre, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
             if (!string.IsNullOrWhiteSpace(categoria) &&
-                !string.Equals(producto.Category, categoria, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(producto.Categoria, categoria, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -39,7 +39,7 @@ public class ProductoService
         return resultado;
     }
 
-    public async Task<Product> BuscarAsync(int id)
+    public async Task<Product> BuscarAsync(Guid id)
     {
         var producto = await _repository.GetByIdAsync(id);
         if (producto == null)
@@ -50,12 +50,23 @@ public class ProductoService
         return producto;
     }
 
-    public async Task<Product> CrearAsync(CreateProductRequest request)
+    public async Task<Product> CrearAsync(CrearProductoRequest request)
     {
-        ValidarProducto(request.Name, request.Description, request.Price, request.Stock, request.Category);
+        ValidarProducto(request.Nombre, request.Descripcion, request.Precio, request.Stock, request.Categoria);
 
-        var producto = await _repository.CreateAsync(request);
-        if (producto == null)
+        var producto = new Product
+        {
+            Id = Guid.NewGuid(),
+            Nombre = request.Nombre,
+            Descripcion = request.Descripcion,
+            Precio = request.Precio,
+            Stock = request.Stock,
+            Categoria = request.Categoria!,
+            FechaCreacion = DateTime.UtcNow
+        };
+
+        bool creado = await _repository.CreateAsync(producto);
+        if (!creado)
         {
             throw new BusinessRuleException("PRD-003",
                 "Ya existe un producto con ese nombre en la categoria.");
@@ -64,9 +75,9 @@ public class ProductoService
         return producto;
     }
 
-    public async Task<Product> ActualizarAsync(int id, UpdateProductRequest request)
+    public async Task<Product> ActualizarAsync(Guid id, ActualizarProductoRequest request)
     {
-        ValidarProducto(request.Name, request.Description, request.Price, request.Stock, request.Category);
+        ValidarProducto(request.Nombre, request.Descripcion, request.Precio, request.Stock, request.Categoria);
 
         bool actualizado = await _repository.UpdateAsync(id, request);
         if (!actualizado)
@@ -79,7 +90,7 @@ public class ProductoService
         return await BuscarAsync(id);
     }
 
-    public async Task EliminarAsync(int id)
+    public async Task EliminarAsync(Guid id)
     {
         bool eliminado = await _repository.DeleteAsync(id);
         if (!eliminado)

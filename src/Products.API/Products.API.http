@@ -1,5 +1,5 @@
 @Products.API_HostAddress = http://localhost:5208
-@ProductId = 1
+@ProductId = 00000000-0000-0000-0000-000000000001
 
 GET {{Products.API_HostAddress}}/api/products
 Accept: application/json
@@ -10,11 +10,11 @@ POST {{Products.API_HostAddress}}/api/products
 Content-Type: application/json
 
 {
-  "name": "Notebook",
-  "description": "Producto de ejemplo",
-  "price": 1500,
+  "nombre": "Notebook",
+  "descripcion": "Producto de ejemplo",
+  "precio": 1500,
   "stock": 10,
-  "category": "Tecnologia"
+  "categoria": "Tecnologia"
 }
 
 ###
@@ -30,11 +30,11 @@ PUT {{Products.API_HostAddress}}/api/products/{{ProductId}}
 Content-Type: application/json
 
 {
-  "name": "Notebook",
-  "description": "Producto actualizado",
-  "price": 1750,
+  "nombre": "Notebook",
+  "descripcion": "Producto actualizado",
+  "precio": 1750,
   "stock": 8,
-  "category": "Tecnologia"
+  "categoria": "Tecnologia"
 }
 
 ###
@@ -44,10 +44,10 @@ POST {{Products.API_HostAddress}}/api/products
 Content-Type: application/json
 
 {
-  "name": "Producto invalido",
-  "price": 0,
+  "nombre": "Producto invalido",
+  "precio": 0,
   "stock": 1,
-  "category": "Otros"
+  "categoria": "Otros"
 }
 
 ###
@@ -57,10 +57,10 @@ POST {{Products.API_HostAddress}}/api/products
 Content-Type: application/json
 
 {
-  "name": "Notebook",
-  "price": 1500,
+  "nombre": "Notebook",
+  "precio": 1500,
   "stock": 10,
-  "category": "Tecnologia"
+  "categoria": "Tecnologia"
 }
 
 ###

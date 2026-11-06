@@ -36,34 +36,46 @@ Microservicios pensados para el TP:
 
 ## Como correr Products.API
 
+Se necesita el SDK de .NET 10. Swagger queda en `http://localhost:5208/swagger`
+con el perfil `http`.
+
 Restaurar y compilar:
 
 ```bash
-dotnet restore ECommerce.sln --ignore-failed-sources
+dotnet restore ECommerce.sln
 dotnet build ECommerce.sln --no-restore
 ```
 
 Ejecutar:
 
 ```bash
-dotnet run --project src/Products.API/Products.API.csproj
+dotnet run --project src/Products.API/Products.API.csproj --launch-profile http
 ```
 
 Endpoints principales:
 
-- `GET /products`
-- `GET /products/{id}`
-- `POST /products`
-- `PUT /products/{id}`
-- `DELETE /products/{id}`
+- `GET /api/products?nombre=&categoria=`
+- `GET /api/products/{id}`
+- `POST /api/products`
+- `PUT /api/products/{id}`
+- `DELETE /api/products/{id}`
 - `GET /health`
 - `GET /health-ui`
 
+Los IDs de productos son Guid. El JSON usa `nombre`, `descripcion`, `precio`,
+`stock` y `categoria`. El servidor agrega `id` y `fechaCreacion` al crear.
+Los ejemplos y las pruebas estan en `src/Products.API/Products.API.http` y
+`src/Products.API/PRUEBAS.md`.
+
+La base anterior se adapta sin borrar productos. Los Guid asignados se
+conservan en los siguientes inicios. Sigue pendiente confirmar la libreria de
+persistencia mencionada por la consigna.
+
 ## Pendiente
 
-- Definir bien que hace cada microservicio.
 - Agregar los otros proyectos al repo.
 - Documentar puertos.
-- Agregar codigos de error.
+- Completar Productos: restriccion de borrado por ordenes activas (PRD-004),
+  documentacion Swagger y tareas transversales de logging, correlacion y salud.
 - Subir capturas de Swagger cuando vayamos probando.
 
