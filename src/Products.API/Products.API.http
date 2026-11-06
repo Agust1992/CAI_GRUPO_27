@@ -1,6 +1,18 @@
 @Products.API_HostAddress = http://localhost:5208
 @ProductId = 00000000-0000-0000-0000-000000000001
 
+GET {{Products.API_HostAddress}}/health
+
+###
+
+GET {{Products.API_HostAddress}}/health/ready
+
+###
+
+GET {{Products.API_HostAddress}}/health/live
+
+###
+
 GET {{Products.API_HostAddress}}/api/products
 Accept: application/json
 

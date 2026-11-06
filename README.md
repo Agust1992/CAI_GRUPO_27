@@ -60,12 +60,19 @@ Endpoints principales:
 - `PUT /api/products/{id}`
 - `DELETE /api/products/{id}`
 - `GET /health`
+- `GET /health/ready`
+- `GET /health/live`
 - `GET /health-ui`
 
 Los IDs de productos son Guid. El JSON usa `nombre`, `descripcion`, `precio`,
 `stock` y `categoria`. El servidor agrega `id` y `fechaCreacion` al crear.
 Los ejemplos y las pruebas estan en `src/Products.API/Products.API.http` y
 `src/Products.API/PRUEBAS.md`.
+
+`/health/live` comprueba el proceso y `/health/ready` la base de Productos.
+Si la base no esta disponible, ready devuelve 503 aunque live siga respondiendo
+200. El ejemplo para adaptar en los otros servicios esta en
+`docs/EJEMPLO_SALUD.md`.
 
 La base anterior se adapta sin borrar productos. Los Guid asignados se
 conservan en los siguientes inicios. Sigue pendiente confirmar la libreria de
@@ -76,6 +83,6 @@ persistencia mencionada por la consigna.
 - Agregar los otros proyectos al repo.
 - Documentar puertos.
 - Completar Productos: restriccion de borrado por ordenes activas (PRD-004),
-  documentacion Swagger y tareas transversales de logging, correlacion y salud.
+  documentacion Swagger y tareas transversales de logging y correlacion.
 - Subir capturas de Swagger cuando vayamos probando.
 

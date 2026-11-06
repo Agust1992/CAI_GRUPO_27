@@ -35,8 +35,9 @@ public static class ServicesExtensions
         services.AddSwaggerGen();
 
         services.AddHealthChecks()
-            .AddCheck<SqliteHealthCheck>("sqlite-db", tags: ["database"])
-            .AddCheck<ApiStatusCheck>("api-status", tags: ["api"]);
+            .AddCheck<SqliteHealthCheck>("sqlite-db", tags: ["database", "ready"],
+                timeout: TimeSpan.FromSeconds(5))
+            .AddCheck<ApiStatusCheck>("api-status", tags: ["api", "live"]);
 
         services.AddHealthChecksUI(setup =>
         {

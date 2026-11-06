@@ -95,14 +95,27 @@ admite modificaciones por Guid y no cambia los Guid al reiniciar.
 La solucion compilo sin errores, con las dos advertencias de dependencias
 indicadas abajo.
 
+## Salud
+
+Se publican `/health`, `/health/ready` y `/health/live` con respuestas JSON.
+El estado general consulta API y SQLite; ready consulta SQLite y live solo API.
+La verificacion de SQLite comprueba la tabla y sus columnas, sin crear bases
+faltantes ni devolver excepciones internas al cliente.
+
+Se prueba una falla temporal de la tabla: ready y health deben devolver 503
+Unhealthy, mientras live conserva 200 Healthy. Luego se restaura la tabla y
+ready debe volver a 200 sin reiniciar. Se usan bases temporales separadas.
+El ejemplo para los otros integrantes esta en `docs/EJEMPLO_SALUD.md`.
+
 ## Pendientes antes de integrar con los otros servicios
 
 - Borrado condicionado a ordenes Pendiente o Confirmada: PRD-004 aun no esta
   implementado. No tomar el DELETE actual como la regla final.
 - Acordar con Christian el formato comun y la propagacion de X-Correlation-Id.
   El campo actual usa TraceIdentifier, pero no hay trazabilidad entre servicios.
-- Completar Swagger con XML comments y ejemplos, logging JSON y los tres
-  controles de salud, siguiendo el reparto del equipo.
+- Completar Swagger con XML comments y ejemplos y logging JSON, siguiendo el
+  reparto del equipo. Cada integrante adapta y verifica los controles de salud
+  en sus propios servicios.
 - Revisar las advertencias de KubernetesClient y SQLitePCLRaw.lib.e_sqlite3.
 
 La ruta anterior `/products` se reemplazo por `/api/products`; no hay dos juegos
