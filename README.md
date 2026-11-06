@@ -25,7 +25,7 @@ Por ahora el repo tiene:
 - El microservicio `Products.API` con endpoints para productos.
 - El microservicio `Cart.API`, que consulta Productos por HTTP.
 - Persistencia local con SQLite.
-- Swagger, health checks, logging y middleware de auditoria, siguiendo la estructura de la MiniApi.
+- Swagger, health checks y logs JSON con correlacion, siguiendo la base MiniApi.
 
 Microservicios pensados para el TP:
 
@@ -99,8 +99,9 @@ existencia y stock por HTTP. Carrito no descuenta ni reserva stock.
 
 Los ejemplos estan en `src/Cart.API/Cart.API.http` y las reglas, decisiones y
 pendientes en `src/Cart.API/PRUEBAS.md`. Incluye los tres controles de salud,
-errores CRT y logs JSON con correlacion. Falta acordar el formato transversal
-definitivo con el grupo y cerrar los ejemplos de Swagger y las evidencias.
+errores CRT, ejemplos de Swagger y logs JSON con correlacion. Falta acordar el
+formato transversal definitivo con el grupo y verificar las integraciones con
+los servicios reales de los otros integrantes.
 
 ## Pendiente
 

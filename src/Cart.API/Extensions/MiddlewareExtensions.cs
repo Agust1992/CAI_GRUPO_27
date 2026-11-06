@@ -1,4 +1,5 @@
 using Cart.API.Middleware;
+using Cart.API.ExceptionHandlers;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -28,6 +29,13 @@ public static class MiddlewareExtensions
             };
         });
         app.UseExceptionHandler();
+        app.UseStatusCodePages(async statusContext =>
+        {
+            var context = statusContext.HttpContext;
+            var problema = RespuestaError.CrearErrorHttp(context, context.Response.StatusCode);
+            await RespuestaError.EscribirAsync(context, context.Response.StatusCode,
+                problema.ErrorCode, problema.ErrorMessage, context.RequestAborted);
+        });
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();

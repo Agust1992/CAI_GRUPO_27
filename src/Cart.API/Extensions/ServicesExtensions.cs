@@ -3,6 +3,7 @@ using Cart.API.ExceptionHandlers;
 using Cart.API.HealthChecks;
 using Cart.API.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Cart.API.Extensions;
 
@@ -38,6 +39,7 @@ public static class ServicesExtensions
                 return respuesta;
             };
         });
+        services.AddTransient<IClientErrorFactory, ClientErrorFactory>();
         services.AddExceptionHandler<NotFoundExceptionHandler>();
         services.AddExceptionHandler<ValidationExceptionHandler>();
         services.AddExceptionHandler<BusinessRuleExceptionHandler>();
@@ -45,7 +47,10 @@ public static class ServicesExtensions
         services.AddProblemDetails();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
-            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Cart.API.xml")));
+        {
+            options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Cart.API.xml"));
+            options.OperationFilter<SwaggerExamples>();
+        });
         services.AddHealthChecks()
             .AddCheck<ApiStatusCheck>("api-status", tags: ["live"])
             .AddCheck<SqliteHealthCheck>("sqlite-db", tags: ["ready"], timeout: TimeSpan.FromSeconds(5));

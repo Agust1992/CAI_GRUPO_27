@@ -105,8 +105,8 @@ Se verificaron el contrato en espanol, los tipos en Swagger, IDs invalidos,
 fechas asignadas por el servidor y la precision de los precios. Tambien se
 probo una base con el esquema anterior: conserva sus productos e IDs internos,
 admite modificaciones por Guid y no cambia los Guid al reiniciar.
-La solucion compilo sin errores, con las dos advertencias de dependencias
-indicadas abajo.
+La solucion compilo sin errores ni advertencias despues de actualizar las
+dependencias indicadas abajo.
 
 ## Salud
 

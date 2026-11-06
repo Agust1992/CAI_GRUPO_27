@@ -84,7 +84,8 @@ inesperados Error. No se registran cuerpos de solicitudes ni secretos.
 Cart conserva un X-Correlation-Id recibido de hasta 100 caracteres ASCII sin
 espacios, o genera un Guid. Lo devuelve como encabezado y lo propaga a
 Productos. Falta coordinar con Christian y Agustin el ejemplo comun definitivo;
-Productos todavia no completa toda la trazabilidad de extremo a extremo.
+Productos tambien conserva el encabezado y lo envia a Orders. La propagacion
+se prueba con Productos real y con la dependencia de Orders simulada.
 
 ## Persistencia y pendientes
 
@@ -92,16 +93,23 @@ Se usa SQLite/Dapper siguiendo la base MiniApi, con tablas carts y cart_items
 propias. No se usa el repositorio generico de StockPulse. Sigue pendiente
 confirmar la libreria de persistencia mencionada en la consigna.
 
-Antes de cerrar: revisar el formato comun de errores/logs con los responsables,
-completar ejemplos JSON explicitos en Swagger, obtener capturas de evidencia y
-revisar la advertencia conocida de SQLitePCLRaw.lib.e_sqlite3.
+Swagger incluye ejemplos JSON de solicitudes, respuestas y errores. Los errores
+de validacion y de HTTP, incluidos 405 y 415, conservan el formato comun. El PUT
+documenta los dos casos de 404: carrito inexistente e item inexistente.
+Se actualizo Microsoft.Data.Sqlite a 10.0.14 para dejar de usar la dependencia
+nativa con la advertencia de seguridad detectada en la auditoria.
+
+Antes de cerrar: revisar los contratos comunes con el grupo, confirmar la
+persistencia de la catedra y probar el conjunto con Orders real.
 
 Las pruebas de este avance usan dos APIs reales con bases temporales. Tambien
 se usa un servidor simulado para respuestas invalidas, errores y timeout de
 Productos. Esa simulacion no reemplaza la prueba real de integracion.
 
-La ejecucion completo 87 comprobaciones. Se verificaron POST acumulativo, PUT
-de reemplazo, cantidades invalidas, carrito o producto inexistente, stock
-insuficiente, usuarios independientes, borrado y vaciado repetidos, reinicio,
-fallo de persistencia y recuperacion. Se comprobaron logs JSON y correlacion
-recibida y enviada. Estas son pruebas HTTP de integracion, no tests unitarios.
+Desde la raiz del repositorio, ejecutar `tests/ProbarCarrito.ps1` con el SDK de
+.NET 10 activo. Verifica POST acumulativo, PUT de reemplazo, cantidades
+invalidas, carrito o producto inexistente, stock insuficiente, usuarios
+independientes, sumas simultaneas, borrado, vaciado y conservacion de datos al
+reiniciar. Incluye respuestas invalidas, timeout y caida de Productos, ademas
+de Swagger, logs JSON y correlacion. Imprime la carpeta de evidencia y detiene
+los procesos que inicio. Estas son pruebas HTTP de integracion, no unitarias.

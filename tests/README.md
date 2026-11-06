@@ -7,6 +7,7 @@ Desde la raiz del repositorio:
 
 ```powershell
 .\tests\ProbarProductos.ps1
+.\tests\ProbarCarrito.ps1
 ```
 
 El script compila los proyectos necesarios, inicia servidores en puertos libres
@@ -15,7 +16,13 @@ dependencia, errores 400/404/405/409/415/500, correlacion, logs y Swagger. Detie
 sus procesos al terminar, incluso si una comprobacion falla. Imprime la carpeta
 de evidencia para revisar las salidas y logs.
 
-`Dependencias` es un servidor simulado de pruebas. NO es Orders.API, no esta en
+El de Carrito inicia Productos y Cart reales. Verifica las cantidades, stock,
+usuarios separados, solicitudes simultaneas, reinicio, errores HTTP y Swagger.
+Usa la dependencia simulada para provocar respuestas invalidas y caidas que
+no se deben generar modificando la API real.
+
+`Dependencias` es un servidor simulado de pruebas. NO es Orders.API ni
+Products.API, no esta en
 ECommerce.sln y no reemplaza la implementacion de Christian. Sus rutas de control
 solo sirven para simular estados y errores. No se publica junto con las APIs.
 

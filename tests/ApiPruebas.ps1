@@ -33,13 +33,30 @@ function IniciarApi($entorno, $nombre, $proyecto, $variables=@{}, $salud='/healt
     $rutaProyecto = Join-Path $script:RaizRepo $proyecto
     $nombreDll = [IO.Path]::GetFileNameWithoutExtension($rutaProyecto) + '.dll'
     $dll = Join-Path (Split-Path $rutaProyecto -Parent) ('bin\Debug\net10.0\' + $nombreDll)
-    $env:ASPNETCORE_URLS = $url
-    $env:ASPNETCORE_ENVIRONMENT = 'Development'
-    $env:ASPNETCORE_CONTENTROOT = Split-Path $rutaProyecto -Parent
-    $env:ConnectionStrings__DefaultConnection = 'Data Source=' + (Join-Path $directorio 'pruebas.db') + ';Foreign Keys=True'
-    foreach ($variable in $variables.GetEnumerator()) { Set-Item -Path ('Env:' + $variable.Key) -Value $variable.Value }
+    $configuracion = @{
+        ASPNETCORE_URLS = $url
+        ASPNETCORE_ENVIRONMENT = 'Development'
+        ASPNETCORE_CONTENTROOT = (Split-Path $rutaProyecto -Parent)
+        ConnectionStrings__DefaultConnection = ('Data Source=' + (Join-Path $directorio 'pruebas.db') + ';Foreign Keys=True')
+    }
+    foreach ($variable in $variables.GetEnumerator()) { $configuracion[$variable.Key] = $variable.Value }
+    $anteriores = @{}
     $dotnet = (Get-Command dotnet).Source
-    $proceso = Start-Process -FilePath $dotnet -ArgumentList ('"' + $dll + '"') -WorkingDirectory $directorio -WindowStyle Hidden -RedirectStandardOutput (Join-Path $directorio ('salida-' + $entorno.Procesos.Count + '.log')) -RedirectStandardError (Join-Path $directorio ('errores-' + $entorno.Procesos.Count + '.log')) -PassThru
+    try {
+        foreach ($variable in $configuracion.GetEnumerator()) {
+            $anteriores[$variable.Key] = [Environment]::GetEnvironmentVariable($variable.Key, 'Process')
+            [Environment]::SetEnvironmentVariable($variable.Key, [string]$variable.Value, 'Process')
+        }
+        $proceso = Start-Process -FilePath $dotnet -ArgumentList ('"' + $dll + '"') -WorkingDirectory $directorio -WindowStyle Hidden -RedirectStandardOutput (Join-Path $directorio ('salida-' + $entorno.Procesos.Count + '.log')) -RedirectStandardError (Join-Path $directorio ('errores-' + $entorno.Procesos.Count + '.log')) -PassThru
+    } finally {
+        foreach ($variable in $anteriores.GetEnumerator()) {
+            if ($null -eq $variable.Value) {
+                Remove-Item -LiteralPath ('Env:' + $variable.Key) -ErrorAction SilentlyContinue
+            } else {
+                [Environment]::SetEnvironmentVariable($variable.Key, $variable.Value, 'Process')
+            }
+        }
+    }
     $entorno.Procesos.Add($proceso)
     for ($i=0; $i -lt 60; $i++) {
         if ($proceso.HasExited) { throw "$nombre se detuvo al iniciar. Revisar $directorio" }
