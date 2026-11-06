@@ -1,5 +1,8 @@
 using Products.API.Data;
+using Products.API.ExceptionHandlers;
 using Products.API.HealthChecks;
+using Products.API.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Products.API.Extensions;
 
@@ -9,6 +12,24 @@ public static class ServicesExtensions
     {
         services.AddSingleton<DatabaseInitializer>();
         services.AddScoped<ProductRepository>();
+        services.AddScoped<ProductoService>();
+
+        services.AddControllers().ConfigureApiBehaviorOptions(options =>
+        {
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var problema = RespuestaError.CrearProblema(context.HttpContext,
+                    400, "PRD-002", "Los datos del producto no son validos.");
+                var respuesta = new ObjectResult(problema) { StatusCode = 400 };
+                respuesta.ContentTypes.Add("application/problem+json");
+                return respuesta;
+            };
+        });
+        services.AddExceptionHandler<NotFoundExceptionHandler>();
+        services.AddExceptionHandler<ValidationExceptionHandler>();
+        services.AddExceptionHandler<BusinessRuleExceptionHandler>();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();

@@ -1,9 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace Products.API.DTOs;
 
 public record UpdateProductRequest(
     string Name,
     string? Description,
     decimal Price,
-    int Stock,
+    [property: JsonRequired] int Stock,
     string? Category
 );

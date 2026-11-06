@@ -33,22 +33,29 @@ public class AuditMiddleware
         using var memoryStream = new MemoryStream();
         context.Response.Body = memoryStream;
 
-        await _next(context);
+        try
+        {
+            await _next(context);
 
-        memoryStream.Position = 0;
-        var responseBody = await new StreamReader(memoryStream).ReadToEndAsync();
+            memoryStream.Position = 0;
+            var responseBody = await new StreamReader(memoryStream).ReadToEndAsync();
 
-        memoryStream.Position = 0;
-        await memoryStream.CopyToAsync(originalResponseBody);
-        context.Response.Body = originalResponseBody;
+            memoryStream.Position = 0;
+            await memoryStream.CopyToAsync(originalResponseBody);
 
-        _logger.LogInformation(
-            "AUDIT {@Method} {@Path} {@StatusCode} {@RequestBody} {@ResponseBody}",
-            context.Request.Method,
-            context.Request.Path.Value,
-            context.Response.StatusCode,
-            TryParseJson(requestBody),
-            TryParseJson(responseBody));
+            _logger.LogInformation(
+                "AUDIT {@Method} {@Path} {@StatusCode} {@RequestBody} {@ResponseBody}",
+                context.Request.Method,
+                context.Request.Path.Value,
+                context.Response.StatusCode,
+                TryParseJson(requestBody),
+                TryParseJson(responseBody));
+        }
+        finally
+        {
+            // El handler debe poder escribir la respuesta si una operacion falla.
+            context.Response.Body = originalResponseBody;
+        }
     }
 
     private static async Task<string> ReadBodyAsync(Stream body)

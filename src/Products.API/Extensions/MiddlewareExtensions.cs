@@ -9,6 +9,8 @@ public static class MiddlewareExtensions
 {
     public static void UseAppMiddleware(this WebApplication app)
     {
+        app.UseExceptionHandler();
+
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();

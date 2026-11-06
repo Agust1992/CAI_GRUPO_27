@@ -1,11 +1,12 @@
 @Products.API_HostAddress = http://localhost:5208
+@ProductId = 1
 
-GET {{Products.API_HostAddress}}/products/
+GET {{Products.API_HostAddress}}/api/products
 Accept: application/json
 
 ###
 
-POST {{Products.API_HostAddress}}/products/
+POST {{Products.API_HostAddress}}/api/products
 Content-Type: application/json
 
 {
@@ -15,5 +16,60 @@ Content-Type: application/json
   "stock": 10,
   "category": "Tecnologia"
 }
+
+###
+
+# Devuelve productos cuyo nombre contiene "note" y pertenecen a Tecnologia.
+GET {{Products.API_HostAddress}}/api/products?nombre=note&categoria=Tecnologia
+Accept: application/json
+
+###
+
+# Reemplazar ProductId por el id devuelto al crear. Esperado: 200 y producto actualizado.
+PUT {{Products.API_HostAddress}}/api/products/{{ProductId}}
+Content-Type: application/json
+
+{
+  "name": "Notebook",
+  "description": "Producto actualizado",
+  "price": 1750,
+  "stock": 8,
+  "category": "Tecnologia"
+}
+
+###
+
+# Precio cero: esperado 400 con errorCode PRD-002.
+POST {{Products.API_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Producto invalido",
+  "price": 0,
+  "stock": 1,
+  "category": "Otros"
+}
+
+###
+
+# Repetir el alta de Notebook en Tecnologia: esperado 409 con errorCode PRD-003.
+POST {{Products.API_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Notebook",
+  "price": 1500,
+  "stock": 10,
+  "category": "Tecnologia"
+}
+
+###
+
+GET {{Products.API_HostAddress}}/api/products/{{ProductId}}
+Accept: application/json
+
+###
+
+DELETE {{Products.API_HostAddress}}/api/products/{{ProductId}}
 
 ###

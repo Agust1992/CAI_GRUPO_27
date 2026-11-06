@@ -38,17 +38,26 @@ public class ProductRepository
             """, new { id });
     }
 
-    public async Task<Product> CreateAsync(CreateProductRequest request)
+    public async Task<Product?> CreateAsync(CreateProductRequest request)
     {
         using var connection = CreateConnection();
 
-        var id = await connection.ExecuteScalarAsync<int>("""
+        // La comprobacion y el alta van juntas para evitar duplicados entre solicitudes simultaneas.
+        var id = await connection.ExecuteScalarAsync<int?>("""
             INSERT INTO products (name, description, price, stock, category)
-            VALUES (@Name, @Description, @Price, @Stock, @Category);
-            SELECT last_insert_rowid();
+            SELECT @Name, @Description, @Price, @Stock, @Category
+            WHERE NOT EXISTS (
+                SELECT 1 FROM products WHERE name = @Name AND category = @Category
+            )
+            RETURNING id;
             """, request);
 
-        return (await GetByIdAsync(id))!;
+        if (id == null)
+        {
+            return null;
+        }
+
+        return await GetByIdAsync(id.Value);
     }
 
     public async Task<bool> UpdateAsync(int id, UpdateProductRequest request)
@@ -64,6 +73,10 @@ public class ProductRepository
                 category = @Category,
                 updated_at = datetime('now')
             WHERE id = @Id
+              AND NOT EXISTS (
+                  SELECT 1 FROM products
+                  WHERE name = @Name AND category = @Category AND id <> @Id
+              )
             """, new
         {
             request.Name,
