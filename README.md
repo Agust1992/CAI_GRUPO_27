@@ -23,6 +23,7 @@ Por ahora el repo tiene:
 - La base original de la catedra en `MiniApi`.
 - Una solucion del proyecto en `ECommerce.sln`.
 - El microservicio `Products.API` con endpoints para productos.
+- El microservicio `Cart.API`, que consulta Productos por HTTP.
 - Persistencia local con SQLite.
 - Swagger, health checks, logging y middleware de auditoria, siguiendo la estructura de la MiniApi.
 
@@ -78,9 +79,27 @@ La base anterior se adapta sin borrar productos. Los Guid asignados se
 conservan en los siguientes inicios. Sigue pendiente confirmar la libreria de
 persistencia mencionada por la consigna.
 
+## Como correr Cart.API
+
+Dejar Products.API ejecutandose. En otra terminal:
+
+```powershell
+dotnet run --project src/Cart.API/Cart.API.csproj --launch-profile http
+```
+
+Cart usa `http://localhost:5104` y su Swagger queda en `/swagger`. Tiene una
+base propia y consulta Productos en `http://localhost:5208`, configurable en
+`Services:Products`. POST suma cantidades y PUT las reemplaza, verificando
+existencia y stock por HTTP. Carrito no descuenta ni reserva stock.
+
+Los ejemplos estan en `src/Cart.API/Cart.API.http` y las reglas, decisiones y
+pendientes en `src/Cart.API/PRUEBAS.md`. Incluye los tres controles de salud,
+errores CRT y logs JSON con correlacion. Falta acordar el formato transversal
+definitivo con el grupo y cerrar los ejemplos de Swagger y las evidencias.
+
 ## Pendiente
 
-- Agregar los otros proyectos al repo.
+- Agregar Users.API, Orders.API y Notifications.API.
 - Documentar puertos.
 - Completar Productos: restriccion de borrado por ordenes activas (PRD-004),
   documentacion Swagger y tareas transversales de logging y correlacion.

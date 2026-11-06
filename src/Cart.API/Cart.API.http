@@ -1,0 +1,60 @@
+@CartAddress = http://localhost:5104
+@UserId = a1b2c3d4-0000-0000-0000-111122223333
+@ProductId = 00000000-0000-0000-0000-000000000001
+
+# Primero crear un producto en Products.API y reemplazar ProductId por su Guid.
+GET {{CartAddress}}/api/cart/{{UserId}}
+
+###
+
+POST {{CartAddress}}/api/cart/{{UserId}}/items
+Content-Type: application/json
+X-Correlation-Id: prueba-carrito-1
+
+{
+  "productoId": "{{ProductId}}",
+  "cantidad": 2
+}
+
+###
+
+# Repetir POST suma otras dos unidades, siempre que alcance el stock.
+PUT {{CartAddress}}/api/cart/{{UserId}}/items/{{ProductId}}
+Content-Type: application/json
+
+{
+  "cantidad": 1
+}
+
+###
+
+# Cantidad invalida: 400 con CRT-004.
+POST {{CartAddress}}/api/cart/{{UserId}}/items
+Content-Type: application/json
+
+{
+  "productoId": "{{ProductId}}",
+  "cantidad": 0
+}
+
+###
+
+DELETE {{CartAddress}}/api/cart/{{UserId}}/items/{{ProductId}}
+
+###
+
+DELETE {{CartAddress}}/api/cart/{{UserId}}
+
+###
+
+GET {{CartAddress}}/health
+
+###
+
+GET {{CartAddress}}/health/ready
+
+###
+
+GET {{CartAddress}}/health/live
+
+###

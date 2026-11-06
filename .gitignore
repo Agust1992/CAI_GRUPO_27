@@ -7,6 +7,9 @@
 .env
 appsettings.Local.json
 *.db
+*.db-journal
+*.db-shm
+*.db-wal
 
 # User-specific files
 *.rsuser
