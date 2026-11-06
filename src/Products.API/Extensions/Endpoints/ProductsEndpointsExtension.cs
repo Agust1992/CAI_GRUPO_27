@@ -23,14 +23,11 @@ public static class ProductsEndpointsExtension
 
         group.MapPost("/", async (CreateProductRequest request, ProductRepository repository) =>
         {
-            if (string.IsNullOrWhiteSpace(request.Name))
+            string? error = ValidarProducto(request.Name, request.Description,
+                request.Price, request.Stock, request.Category);
+            if (error != null)
             {
-                return Results.BadRequest("El nombre del producto es obligatorio.");
-            }
-
-            if (request.Price < 0 || request.Stock < 0)
-            {
-                return Results.BadRequest("El precio y el stock no pueden ser negativos.");
+                return Results.BadRequest(error);
             }
 
             var product = await repository.CreateAsync(request);
@@ -39,14 +36,11 @@ public static class ProductsEndpointsExtension
 
         group.MapPut("/{id:int}", async (int id, UpdateProductRequest request, ProductRepository repository) =>
         {
-            if (string.IsNullOrWhiteSpace(request.Name))
+            string? error = ValidarProducto(request.Name, request.Description,
+                request.Price, request.Stock, request.Category);
+            if (error != null)
             {
-                return Results.BadRequest("El nombre del producto es obligatorio.");
-            }
-
-            if (request.Price < 0 || request.Stock < 0)
-            {
-                return Results.BadRequest("El precio y el stock no pueden ser negativos.");
+                return Results.BadRequest(error);
             }
 
             var updated = await repository.UpdateAsync(id, request);
@@ -58,5 +52,41 @@ public static class ProductsEndpointsExtension
             var deleted = await repository.DeleteAsync(id);
             return deleted ? Results.NoContent() : Results.NotFound();
         });
+    }
+
+    private static string? ValidarProducto(string? nombre, string? descripcion,
+        decimal precio, int stock, string? categoria)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            return "El nombre del producto es obligatorio.";
+        }
+
+        if (nombre.Length > 100)
+        {
+            return "El nombre del producto no puede superar los 100 caracteres.";
+        }
+
+        if (descripcion != null && descripcion.Length > 500)
+        {
+            return "La descripcion del producto no puede superar los 500 caracteres.";
+        }
+
+        if (precio <= 0)
+        {
+            return "El precio del producto debe ser mayor a cero.";
+        }
+
+        if (stock < 0)
+        {
+            return "El stock del producto no puede ser negativo.";
+        }
+
+        if (string.IsNullOrWhiteSpace(categoria))
+        {
+            return "La categoria del producto es obligatoria.";
+        }
+
+        return null;
     }
 }
