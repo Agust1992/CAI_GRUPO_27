@@ -28,5 +28,5 @@ solo sirven para simular estados y errores. No se publica junto con las APIs.
 
 Estas son pruebas HTTP de integracion. No se presentan como tests unitarios.
 Antes de entregar falta repetir el flujo con Orders.API real y los demas
-servicios del grupo. Las pruebas no certifican la libreria de persistencia de
-la catedra, que sigue pendiente de confirmar.
+servicios del grupo. Las pruebas cubren la persistencia SQLite/Dapper utilizada
+por estas APIs a partir de la MiniApi.

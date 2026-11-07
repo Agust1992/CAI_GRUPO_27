@@ -37,9 +37,9 @@ ni se agregan funciones de checkout o pagos.
 
 ## Reglas y decisiones
 
-POST suma a la cantidad existente y PUT la reemplaza. Esta regla se acordo
-con Luciano. Al sumar se compara el total resultante contra el stock, no
-solamente lo que llega en el ultimo pedido. La operacion se guarda dentro de
+POST suma a la cantidad existente y PUT la reemplaza. Al sumar se compara el
+total resultante contra el stock, no solamente lo que llega en el ultimo
+pedido. La operacion se guarda dentro de
 una transaccion para no perder sumas simultaneas.
 
 Antes de guardar un alta o una modificacion se consulta Products.API para
@@ -90,8 +90,8 @@ se prueba con Productos real y con la dependencia de Orders simulada.
 ## Persistencia y pendientes
 
 Se usa SQLite/Dapper siguiendo la base MiniApi, con tablas carts y cart_items
-propias. No se usa el repositorio generico de StockPulse. Sigue pendiente
-confirmar la libreria de persistencia mencionada en la consigna.
+propias. Esa es la base de persistencia adoptada por el equipo a partir de
+la MiniApi.
 
 Swagger incluye ejemplos JSON de solicitudes, respuestas y errores. Los errores
 de validacion y de HTTP, incluidos 405 y 415, conservan el formato comun. El PUT
@@ -99,8 +99,8 @@ documenta los dos casos de 404: carrito inexistente e item inexistente.
 Se actualizo Microsoft.Data.Sqlite a 10.0.14 para dejar de usar la dependencia
 nativa con la advertencia de seguridad detectada en la auditoria.
 
-Antes de cerrar: revisar los contratos comunes con el grupo, confirmar la
-persistencia de la catedra y probar el conjunto con Orders real.
+Antes de cerrar: revisar los contratos comunes con el grupo y probar el
+conjunto con Orders real. Las capturas actuales de errores estan en docs/capturas.
 
 Las pruebas de este avance usan dos APIs reales con bases temporales. Tambien
 se usa un servidor simulado para respuestas invalidas, errores y timeout de

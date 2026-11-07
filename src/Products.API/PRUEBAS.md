@@ -2,8 +2,7 @@
 
 Este avance separa las rutas en `Controllers/ProductosController.cs` y las
 reglas en `Services/ProductoService.cs`. El repositorio conserva SQLite y
-Dapper de la MiniApi. Todavia hay que confirmar con la catedra la libreria de
-persistencia mencionada en la consigna.
+Dapper de la MiniApi, que se mantiene como base de persistencia del equipo.
 
 ## Para probar
 
@@ -126,8 +125,8 @@ El ejemplo para los otros integrantes esta en `docs/EJEMPLO_SALUD.md`.
   El contrato usado esta en docs/INTEGRACION_ORDERS.md.
 - Revisar con Agustin y Christian la convencion comun de logs y errores.
 - Cada integrante adapta y verifica los controles de salud en sus servicios.
-- Confirmar la libreria de persistencia de la catedra y obtener capturas para
-  la entrega.
+- Revisar con el grupo el conjunto de evidencias y la demo de entrega. Las
+  capturas actuales de errores estan en docs/capturas.
 
 Las pruebas repetibles estan en tests/ProbarProductos.ps1 y no usan datos de
 trabajo. Para cerrar los avisos de dependencias se actualizaron
