@@ -13,7 +13,10 @@ Productos a las otras APIs.
 - `/health/ready`: comprueba la dependencia necesaria para atender solicitudes.
   En Productos verifica que SQLite se pueda abrir y que exista la estructura
   de la tabla de productos. No agrega ni modifica registros.
-- `/health-ui`: panel de la MiniApi para ver el estado general.
+
+La MiniApi original conserva su panel de referencia. Products.API no monta
+`/health-ui`: para este TP se mantienen los tres endpoints JSON obligatorios,
+sin el recolector y las dependencias del panel opcional.
 
 Healthy devuelve 200. Unhealthy devuelve 503. Si un control devuelve Degraded,
 el estado general lo conserva y readiness devuelve 503: el servicio no debe
@@ -45,7 +48,7 @@ queda en los logs del servidor.
 
 ## Como adaptarlo
 
-1. Cambiar el nombre de servicio en ApiStatusCheck y en el panel de salud.
+1. Cambiar el nombre de servicio en ApiStatusCheck.
 2. Mantener live independiente de bases de datos o llamadas HTTP externas.
 3. Adaptar el control ready a la persistencia real del servicio. La consulta
    de Productos no sirve para comprobar Users u Orders.

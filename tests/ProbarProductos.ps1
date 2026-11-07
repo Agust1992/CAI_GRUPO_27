@@ -34,11 +34,13 @@ try {
     Comprobar ($error409.example.errorCode -eq 'PRD-004') 'Falta el ejemplo de orden activa en Swagger.'
     Comprobar ($swagger.paths.'/api/products'.post.requestBody.content.'application/json'.example.precio -gt 0) 'Falta un ejemplo de alta valido.'
     Comprobar ($swagger.components.schemas.ErrorResponse.properties.errorCode -and $swagger.components.schemas.ErrorResponse.properties.correlationId) 'El esquema de error no muestra sus campos propios.'
-    foreach ($ruta in @('/health','/health/ready','/health/live','/health-ui','/healthchecks-api')) {
+    foreach ($ruta in @('/health','/health/ready','/health/live')) {
         Comprobar ((Solicitar GET ($base + $ruta)).Estado -eq 200) "Fallo $ruta."
     }
     CerrarEntorno $entorno
     $logs = @(Get-ChildItem (Join-Path $productos.Carpeta 'logs') -Filter '*.json' | ForEach-Object { Get-Content $_.FullName } | ForEach-Object { $_ | ConvertFrom-Json })
+    $fallosRecolector = @($logs | Where-Object { $_.MessageTemplate -like 'HealthCheck collector*' -and $_.Level -eq 'Error' })
+    Comprobar ($fallosRecolector.Count -eq 0) 'Fallo un recolector de salud en segundo plano.'
     $correcto404 = @($logs | Where-Object {$_.Properties.RequestPath -like '*000000000001' -and $_.Properties.StatusCode -eq 404 -and $_.Level -eq 'Warning'})
     Comprobar ($correcto404.Count -gt 0) 'El log de 404 no tiene estado o nivel correctos.'
     foreach ($log in $logs) {

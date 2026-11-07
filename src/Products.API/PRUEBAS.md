@@ -130,7 +130,10 @@ El ejemplo para los otros integrantes esta en `docs/EJEMPLO_SALUD.md`.
 
 Las pruebas repetibles estan en tests/ProbarProductos.ps1 y no usan datos de
 trabajo. Para cerrar los avisos de dependencias se actualizaron
-Microsoft.Data.Sqlite a 10.0.14 y KubernetesClient a 17.0.14, sin suprimirlos.
+Microsoft.Data.Sqlite a 10.0.14, sin suprimirlos. Se retiro el panel opcional
+HealthChecks UI y su recolector, que fallaba al iniciar por una dependencia
+faltante. Tambien se quitaron sus paquetes de almacenamiento y KubernetesClient.
+Se conserva UI.Client para escribir el JSON de los tres controles obligatorios.
 
 La ruta anterior `/products` se reemplazo por `/api/products`; no hay dos juegos
 de endpoints en paralelo. No se modificaron MiniApi, Orders, Users, Cart ni
