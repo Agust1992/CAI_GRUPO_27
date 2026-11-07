@@ -1,29 +1,20 @@
 namespace Products.API.Models;
 
+/// <summary>Producto del catalogo.</summary>
 public record Product
 {
-    public long Id { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public string? Description { get; init; }
-    public decimal Price { get; init; }
+    /// <summary>Guid asignado por el servidor.</summary>
+    public Guid Id { get; init; }
+    /// <summary>Nombre obligatorio, hasta 100 caracteres.</summary>
+    public string Nombre { get; init; } = string.Empty;
+    /// <summary>Descripcion opcional, hasta 500 caracteres.</summary>
+    public string? Descripcion { get; init; }
+    /// <summary>Precio decimal mayor a cero.</summary>
+    public decimal Precio { get; init; }
+    /// <summary>Unidades disponibles, cero o mas.</summary>
     public int Stock { get; init; }
-    public string? Category { get; init; }
-    public string CreatedAt { get; init; } = string.Empty;
-    public string? UpdatedAt { get; init; }
+    /// <summary>Categoria obligatoria, sin lista cerrada de valores.</summary>
+    public string Categoria { get; init; } = string.Empty;
+    /// <summary>Fecha UTC asignada al crear y conservada al modificar.</summary>
+    public DateTime FechaCreacion { get; init; }
 }
-
-public record CreateProductRequest(
-    string Name,
-    string? Description,
-    decimal Price,
-    int Stock,
-    string? Category
-);
-
-public record UpdateProductRequest(
-    string Name,
-    string? Description,
-    decimal Price,
-    int Stock,
-    string? Category
-);
