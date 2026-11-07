@@ -1,6 +1,7 @@
 using Users.API.Data;
 using Microsoft.AspNetCore.Identity;
 using Users.API.Models;
+using Users.API.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// REGISTRA EL SERVICIO DE USUARIOS.
+builder.Services.AddScoped<UserService>();
 
 // REGISTRA EL INICIALIZADOR DE LA BASE.
 builder.Services.AddSingleton<DatabaseInitializer>();
