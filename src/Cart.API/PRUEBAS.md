@@ -80,6 +80,9 @@ Serilog escribe consola y archivos JSON diarios en logs, que no se suben al
 repositorio. Los eventos incluyen Service, Endpoint y CorrelationId. Se
 registran inicio, fin y duracion; los errores de negocio son Warning y los
 inesperados Error. No se registran cuerpos de solicitudes ni secretos.
+La consola muestra fecha, nivel, Service, Endpoint, CorrelationId y errorCode
+cuando corresponde. Las pruebas comprueban los campos en errores de validacion
+y de dependencia, ademas de revisar los archivos JSON.
 
 Cart conserva un X-Correlation-Id recibido de hasta 100 caracteres ASCII sin
 espacios, o genera un Guid. Lo devuelve como encabezado y lo propaga a

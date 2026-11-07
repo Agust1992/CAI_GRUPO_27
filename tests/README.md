@@ -15,6 +15,9 @@ y usa bases SQLite temporales. Prueba los estados de orden, fallas de la
 dependencia, errores 400/404/405/409/415/500, correlacion, logs y Swagger. Detiene
 sus procesos al terminar, incluso si una comprobacion falla. Imprime la carpeta
 de evidencia para revisar las salidas y logs.
+Se comprueban los campos de observabilidad tanto en los archivos JSON como
+en la salida de consola. Productos tambien verifica que no haya errores de
+un recolector de salud en segundo plano.
 
 El de Carrito inicia Productos y Cart reales. Verifica las cantidades, stock,
 usuarios separados, solicitudes simultaneas, reinicio, errores HTTP y Swagger.

@@ -13,7 +13,7 @@ public static class LoggingExtensions
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .Enrich.FromLogContext()
             .Enrich.WithProperty("Service", "Products.API")
-            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] Service={Service} Endpoint={Endpoint} CorrelationId={CorrelationId} errorCode={errorCode} {Message:lj}{NewLine}{Exception}")
             .WriteTo.File(new JsonFormatter(), "logs/products-.json", rollingInterval: RollingInterval.Day)
             .CreateLogger();
 

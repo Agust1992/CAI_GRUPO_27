@@ -86,5 +86,8 @@ try {
         $finales = @($logs | Where-Object {$null -ne $_.Properties.Elapsed -and $_.Properties.CorrelationId -and $_.Properties.Service -and $_.Properties.Endpoint})
         Comprobar ($finales.Count -gt 0) "Faltan logs estructurados en $nombre."
     }
+    ComprobarConsola $productos 'Products.API' 'PRD-001'
+    ComprobarConsola $carrito 'Cart.API' 'CRT-004'
+    ComprobarConsola $simulado 'Cart.API' 'CRT-005'
     Write-Output "Carrito: $script:Comprobaciones comprobaciones correctas. Evidencia: $($entorno.Carpeta)"
 } finally { CerrarEntorno $entorno }

@@ -46,5 +46,6 @@ try {
     foreach ($log in $logs) {
         if ($log.Properties.Endpoint) { Comprobar ($log.Properties.Service -eq 'Products.API' -and $log.Properties.CorrelationId) 'Log sin servicio o correlacion.' }
     }
+    ComprobarConsola $productos 'Products.API' 'PRD-001'
     Write-Output "Productos: $script:Comprobaciones comprobaciones correctas. Evidencia: $($entorno.Carpeta)"
 } finally { CerrarEntorno $entorno }

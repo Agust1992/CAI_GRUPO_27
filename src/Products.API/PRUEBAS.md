@@ -49,6 +49,9 @@ Productos conserva un X-Correlation-Id valido recibido, lo devuelve y lo envia
 a Orders. Serilog registra inicio/fin y duracion, con Service, Endpoint y
 CorrelationId. Los errores de negocio son Warning y los inesperados Error.
 Los archivos son JSON estructurado; ya no se guardan cuerpos de solicitudes.
+La consola muestra fecha, nivel, Service, Endpoint, CorrelationId y errorCode
+cuando corresponde, ademas del mensaje. Las pruebas verifican esos campos
+tambien en el texto de consola, no solo en los archivos JSON.
 
 Swagger incorpora comentarios XML, esquemas con los campos propios de error y
 ejemplos JSON de alta, modificacion, listado, detalle y errores, incluido PRD-004.

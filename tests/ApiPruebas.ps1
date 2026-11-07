@@ -101,6 +101,16 @@ function ComprobarError($respuesta, $estado, $codigo) {
     Comprobar ($respuesta.Texto -notmatch 'stackTrace|SqliteException|no such table|SELECT ') 'El error expuso informacion interna.'
 }
 
+function ComprobarConsola($api, $servicio, $codigo) {
+    $lineas = @(Get-ChildItem $api.Carpeta -Filter 'salida-*.log' | ForEach-Object { Get-Content $_.FullName })
+    $errores = @($lineas | Where-Object {
+        $_ -match '^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} (WRN|ERR)\]' -and
+        $_.Contains("Service=$servicio ") -and $_.Contains('Endpoint=/api/') -and
+        $_.Contains('CorrelationId=prueba-cai ') -and $_.Contains("errorCode=$codigo ")
+    })
+    Comprobar ($errores.Count -gt 0) "La consola de $servicio no muestra fecha, nivel, servicio, endpoint, correlacion y $codigo."
+}
+
 function CerrarEntorno($entorno) {
     foreach ($proceso in $entorno.Procesos) {
         if (!$proceso.HasExited) { Stop-Process -Id $proceso.Id; $proceso.WaitForExit() }
