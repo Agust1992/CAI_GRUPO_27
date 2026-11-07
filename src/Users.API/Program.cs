@@ -1,5 +1,6 @@
 using Users.API.Data;
-
+using Microsoft.AspNetCore.Identity;
+using Users.API.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -10,6 +11,12 @@ builder.Services.AddOpenApi();
 
 // REGISTRA EL INICIALIZADOR DE LA BASE.
 builder.Services.AddSingleton<DatabaseInitializer>();
+
+// REGISTRA EL REPOSITORIO DE USUARIOS.
+builder.Services.AddScoped<UserRepository>();
+
+// REGISTRA EL COMPONENTE PARA CREAR Y VERIFICAR HASHES.
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 var app = builder.Build();
 

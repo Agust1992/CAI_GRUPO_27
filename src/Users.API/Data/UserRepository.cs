@@ -113,4 +113,26 @@ public class UserRepository
         public int Activo { get; set; }
         public int IntentosFallidos { get; set; }
     }
+
+    // Actualiza el contador de intentos y si la cuenta sigue activa.
+    public async Task UpdateLoginStatusAsync(User user)
+    {
+        using var connection = CreateConnection();
+
+        const string sql = """
+        UPDATE users
+        SET intentos_fallidos = @IntentosFallidos,
+            activo = @Activo
+        WHERE id = @Id;
+        """;
+
+        var datos = new
+        {
+            Id = user.Id.ToString(),
+            user.IntentosFallidos,
+            Activo = user.Activo ? 1 : 0
+        };
+
+        await connection.ExecuteAsync(sql, datos);
+    }
 }
