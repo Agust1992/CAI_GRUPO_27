@@ -4,3 +4,16 @@ GET {{Users.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+# Registra un usuario de prueba.
+POST {{Users.API_HostAddress}}/api/users/register
+Content-Type: application/json
+
+{
+  "nombre": "Agustin",
+  "apellido": "Prueba",
+  "email": "agustin.prueba@example.com",
+  "password": "Clave123!"
+}
+
+###

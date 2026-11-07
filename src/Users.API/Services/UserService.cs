@@ -61,4 +61,66 @@ public class UserService
         };
     }
 
+    // Comprueba los datos de inicio de sesión y devuelve los datos del usuario.
+    public async Task<LoginUserResponse> LoginAsync(LoginUserRequest request)
+    {
+        var user = await _userRepository.GetByEmailAsync(request.Email);
+
+        if (user is null)
+        {
+            throw new BusinessRuleException(
+                "USR-003",
+                "Credenciales incorrectas.");
+        }
+
+        if (!user.Activo)
+        {
+            if (user.IntentosFallidos >= 3)
+            {
+                throw new BusinessRuleException(
+                    "USR-004",
+                    "Usuario bloqueado por demasiados intentos fallidos.");
+            }
+
+            throw new BusinessRuleException(
+                "USR-005",
+                "Usuario bloqueado por detección de fraude.");
+        }
+
+        var resultado = _passwordHasher.VerifyHashedPassword(
+            user,
+            user.PasswordHash,
+            request.Password);
+
+        if (resultado == PasswordVerificationResult.Failed)
+        {
+            user.IntentosFallidos++;
+
+            if (user.IntentosFallidos >= 3)
+            {
+                user.Activo = false;
+            }
+
+            await _userRepository.UpdateLoginStatusAsync(user);
+
+            throw new BusinessRuleException(
+                "USR-003",
+                "Credenciales incorrectas.");
+        }
+
+        if (user.IntentosFallidos > 0)
+        {
+            user.IntentosFallidos = 0;
+            await _userRepository.UpdateLoginStatusAsync(user);
+        }
+
+        return new LoginUserResponse
+        {
+            Id = user.Id,
+            Nombre = user.Nombre,
+            Apellido = user.Apellido,
+            Email = user.Email
+        };
+    }
+
 }
