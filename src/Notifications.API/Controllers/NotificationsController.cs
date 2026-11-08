@@ -7,7 +7,6 @@ namespace Notifications.API.Controllers;
 /// <summary>
 /// Permite crear y consultar las notificaciones de los usuarios.
 /// </summary>
-
 [ApiController]
 [Route("api/notifications")]
 public class NotificationsController : ControllerBase
@@ -19,15 +18,19 @@ public class NotificationsController : ControllerBase
         _notificationService = notificationService;
     }
 
-    [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-
     // INICIO DEL POST PARA CREAR UNA NOTIFICACIÓN.
     /// <summary>
     /// Registra una notificación para un usuario existente.
     /// </summary>
+    /// <param name="request">Datos de la notificación que se va a registrar.</param>
+    /// <response code="201">La notificación se registró correctamente.</response>
+    /// <response code="400">Los datos recibidos son inválidos (NTF-002).</response>
+    /// <response code="404">El usuario destinatario no existe (NTF-001).</response>
+    /// <response code="500">Ocurrió un error interno (NTF-004).</response>
+    [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [HttpPost("send")]
     public async Task<IActionResult> Create(CreateNotificationRequest request)
     {
@@ -36,14 +39,17 @@ public class NotificationsController : ControllerBase
         return StatusCode(201, response);
     }
 
-    [ProducesResponseType(typeof(List<NotificationResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
-
     // INICIO DEL GET PARA BUSCAR NOTIFICACIONES POR USUARIO.
     /// <summary>
     /// Devuelve las notificaciones de un usuario.
     /// </summary>
+    /// <param name="usuarioId">Identificador del usuario.</param>
+    /// <response code="200">Se devolvió la lista de notificaciones.</response>
+    /// <response code="404">El usuario no existe o no tiene notificaciones (NTF-001, NTF-003).</response>
+    /// <response code="500">Ocurrió un error interno (NTF-004).</response>
+    [ProducesResponseType(typeof(List<NotificationResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     [HttpGet("{usuarioId:guid}")]
     public async Task<IActionResult> GetByUsuarioId(Guid usuarioId)
     {
