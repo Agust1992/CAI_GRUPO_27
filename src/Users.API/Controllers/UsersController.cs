@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Users.API.DTOs;
 using Users.API.Services;
-
+using Users.API.Exceptions;
 namespace Users.API.Controllers;
 
 [ApiController]
@@ -67,7 +67,7 @@ public class UsersController : ControllerBase
     /// <response code="500">Ocurrió un error interno.</response>
     [ProducesResponseType(typeof(UserLookupResponse), StatusCodes.Status200OK, "application/json")]
     [ProducesResponseType(
-    typeof(ProblemDetails),
+    typeof(ErrorResponse),
     StatusCodes.Status404NotFound,
     "application/problem+json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]
@@ -78,7 +78,9 @@ public class UsersController : ControllerBase
 
         if (user is null)
         {
-            return NotFound();
+            throw new BusinessRuleException(
+                "USR-007",
+                "Usuario no encontrado.");
         }
 
         return Ok(user);

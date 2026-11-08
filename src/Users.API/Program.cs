@@ -65,6 +65,20 @@ builder.Services.AddOpenApi(options =>
         // EJEMPLOS PARA REGISTRAR UN USUARIO.
         if (metodo == "POST" && ruta == "api/users/register")
         {
+            if (operation.RequestBody is not null &&
+                operation.RequestBody.Content.TryGetValue(
+                    "application/json",
+                    out var requestRegistro))
+            {
+                requestRegistro.Example = new JsonObject
+                {
+                    ["nombre"] = "María",
+                    ["apellido"] = "González",
+                    ["email"] = "maria@email.com",
+                    ["password"] = "MiPassword123!"
+                };
+            }
+
             if (operation.Responses.TryGetValue("201", out var respuestaRegistro) &&
                 respuestaRegistro.Content.TryGetValue(
                     "application/json",
@@ -73,28 +87,25 @@ builder.Services.AddOpenApi(options =>
                 contenidoRegistro.Example = new JsonObject
                 {
                     ["id"] = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                    ["nombre"] = "Ana",
-                    ["apellido"] = "Pérez",
-                    ["email"] = "ana.perez@example.com",
+                    ["nombre"] = "María",
+                    ["apellido"] = "González",
+                    ["email"] = "maria@email.com",
                     ["fechaRegistro"] = "2026-11-08T18:00:00Z",
                     ["activo"] = true
                 };
             }
 
-            AgregarEjemploError(
-                operation, "400", "Bad Request", 400,
+            AgregarEjemploError(operation, "400", "Bad Request", 400,
                 "Los datos del usuario son inválidos.",
                 "/api/users/register", "USR-002",
                 "Los datos del usuario son inválidos.");
 
-            AgregarEjemploError(
-                operation, "409", "Conflict", 409,
+            AgregarEjemploError(operation, "409", "Conflict", 409,
                 "Ya existe un recurso con esos datos.",
                 "/api/users/register", "USR-001",
                 "El email ya está registrado.");
 
-            AgregarEjemploError(
-                operation, "500", "Internal Server Error", 500,
+            AgregarEjemploError(operation, "500", "Internal Server Error", 500,
                 "Ocurrió un error inesperado.",
                 "/api/users/register", "USR-006",
                 "Error interno al procesar el usuario.");
@@ -103,6 +114,18 @@ builder.Services.AddOpenApi(options =>
         // EJEMPLOS PARA INICIAR SESIÓN.
         if (metodo == "POST" && ruta == "api/users/login")
         {
+            if (operation.RequestBody is not null &&
+                operation.RequestBody.Content.TryGetValue(
+                    "application/json",
+                    out var requestLogin))
+            {
+                requestLogin.Example = new JsonObject
+                {
+                    ["email"] = "maria@email.com",
+                    ["password"] = "MiPassword123!"
+                };
+            }
+
             if (operation.Responses.TryGetValue("200", out var respuestaLogin) &&
                 respuestaLogin.Content.TryGetValue(
                     "application/json",
@@ -111,40 +134,36 @@ builder.Services.AddOpenApi(options =>
                 contenidoLogin.Example = new JsonObject
                 {
                     ["id"] = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                    ["nombre"] = "Ana",
-                    ["apellido"] = "Pérez",
-                    ["email"] = "ana.perez@example.com"
+                    ["nombre"] = "María",
+                    ["apellido"] = "González",
+                    ["email"] = "maria@email.com"
                 };
             }
 
-            AgregarEjemploError(
-                operation, "400", "Bad Request", 400,
+            AgregarEjemploError(operation, "400", "Bad Request", 400,
                 "Los datos del usuario son inválidos.",
                 "/api/users/login", "USR-002",
                 "Los datos del usuario son inválidos.");
 
-            AgregarEjemploError(
-                operation, "401", "Unauthorized", 401,
+            AgregarEjemploError(operation, "401", "Unauthorized", 401,
                 "Las credenciales no son válidas.",
                 "/api/users/login", "USR-003",
                 "Credenciales incorrectas.");
 
-            AgregarEjemploError(
-                operation, "403", "Forbidden", 403,
+            AgregarEjemploError(operation, "403", "Forbidden", 403,
                 "El acceso está prohibido.",
                 "/api/users/login", "USR-004",
                 "Usuario bloqueado por demasiados intentos fallidos.");
 
-            AgregarEjemploError(
-                operation, "500", "Internal Server Error", 500,
+            AgregarEjemplosBloqueo(operation);
+
+            AgregarEjemploError(operation, "500", "Internal Server Error", 500,
                 "Ocurrió un error inesperado.",
                 "/api/users/login", "USR-006",
                 "Error interno al procesar el usuario.");
-
-            AgregarEjemplosBloqueo(operation);
         }
 
-        // EJEMPLO DE RESPUESTA AL BUSCAR UN USUARIO POR ID.
+        // EJEMPLOS PARA BUSCAR UN USUARIO POR ID.
         if (metodo == "GET" && ruta == "api/users/{id}")
         {
             if (operation.Responses.TryGetValue("200", out var respuestaGet) &&
@@ -155,31 +174,21 @@ builder.Services.AddOpenApi(options =>
                 contenidoGet.Example = new JsonObject
                 {
                     ["id"] = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                    ["nombre"] = "Ana",
-                    ["apellido"] = "Pérez",
-                    ["email"] = "ana.perez@example.com"
+                    ["nombre"] = "María",
+                    ["apellido"] = "González",
+                    ["email"] = "maria@email.com"
                 };
             }
 
-            AgregarEjemploError(
-                operation, "500", "Internal Server Error", 500,
+            AgregarEjemploError(operation, "404", "Not Found", 404,
+                "El recurso solicitado no fue encontrado.",
+                "/api/users/{id}", "USR-007",
+                "Usuario no encontrado.");
+
+            AgregarEjemploError(operation, "500", "Internal Server Error", 500,
                 "Ocurrió un error inesperado.",
                 "/api/users/{id}", "USR-006",
                 "Error interno al procesar el usuario.");
-
-            if (operation.Responses.TryGetValue("404", out var respuesta404) &&
-                respuesta404.Content.TryGetValue(
-                    "application/problem+json",
-                    out var contenido404))
-            {
-                contenido404.Example = new JsonObject
-                {
-                    ["type"] = "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-                    ["title"] = "Not Found",
-                    ["status"] = 404,
-                    ["traceId"] = "00-00000000000000000000000000000000-0000000000000000-00"
-                };
-            }
         }
 
         return Task.CompletedTask;
@@ -338,6 +347,7 @@ static void AgregarEjemploError(
             403 => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
             409 => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
             500 => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+            404 => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
             _ => "https://tools.ietf.org/html/rfc7231"
         },
         ["title"] = titulo,
