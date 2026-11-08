@@ -111,6 +111,12 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    // MUESTRA LA DOCUMENTACIÓN INTERACTIVA DE LA API.
+    app.UseSwaggerUi(options =>
+    {
+        options.DocumentPath = "/openapi/v1.json";
+    });
 }
 
 app.UseHttpsRedirection();
