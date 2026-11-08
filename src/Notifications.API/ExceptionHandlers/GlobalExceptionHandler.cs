@@ -24,7 +24,8 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         _logger.LogError(
             exception,
-            "Error NTF-004 en {Endpoint}. CorrelationId: {CorrelationId}",
+            "{ErrorCode}: Error en {Endpoint}. CorrelationId: {CorrelationId}",
+            "NTF-004",
             httpContext.Request.Path,
             correlationId);
 

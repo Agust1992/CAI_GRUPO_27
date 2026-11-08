@@ -24,7 +24,8 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         _logger.LogError(
             exception,
-            "Error USR-006 en {Endpoint}. CorrelationId: {CorrelationId}",
+            "{ErrorCode}: Error inesperado en {Endpoint}. CorrelationId: {CorrelationId}",
+            "USR-006",
             httpContext.Request.Path,
             correlationId);
 

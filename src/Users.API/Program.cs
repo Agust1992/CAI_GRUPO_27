@@ -31,7 +31,7 @@ builder.Services.AddSerilog((services, loggerConfiguration) =>
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add(new Users.API.ExceptionHandlers.UnsupportedMediaTypeResultFilter()));
 
 // PERSONALIZA LA RESPUESTA CUANDO LOS DATOS NO PASAN LA VALIDACIÓN.
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -229,6 +229,18 @@ var app = builder.Build();
 // REGISTRA CADA PEDIDO HTTP CON SERILOG.
 app.UseSerilogRequestLogging(options =>
 {
+    options.GetLevel = (context, _, exception) =>
+    {
+        if (exception != null || context.Response.StatusCode >= 500)
+        {
+            return Serilog.Events.LogEventLevel.Error;
+        }
+        if (context.Response.StatusCode >= 400)
+        {
+            return Serilog.Events.LogEventLevel.Warning;
+        }
+        return Serilog.Events.LogEventLevel.Information;
+    };
     options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
     {
         diagnosticContext.Set("Endpoint", httpContext.Request.Path.Value);
