@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Notifications.API.DTOs;
 
 namespace Notifications.API.ExceptionHandlers;
@@ -19,6 +19,8 @@ public class GlobalExceptionHandler : IExceptionHandler
         CancellationToken cancellationToken)
     {
         var correlationId = httpContext.TraceIdentifier;
+
+        httpContext.Items["ErrorCode"] = "NTF-004";
 
         _logger.LogError(
             exception,

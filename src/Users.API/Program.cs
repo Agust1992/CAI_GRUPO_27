@@ -22,7 +22,7 @@ builder.Services.AddSerilog((services, loggerConfiguration) =>
         .MinimumLevel.Information()
         .Enrich.WithProperty("Service", "Users.API")
         .Enrich.FromLogContext()
-        .WriteTo.Console()
+        .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] Service={Service} Endpoint={Endpoint} CorrelationId={CorrelationId} ErrorCode={ErrorCode} {Message:lj}{NewLine}{Exception}")
         .WriteTo.File(
             new CompactJsonFormatter(),
             "logs/users-.json",
@@ -38,6 +38,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
     {
+        context.HttpContext.Items["ErrorCode"] = "USR-002";
+
         var response = new ErrorResponse
         {
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
@@ -231,6 +233,10 @@ app.UseSerilogRequestLogging(options =>
     {
         diagnosticContext.Set("Endpoint", httpContext.Request.Path.Value);
         diagnosticContext.Set("CorrelationId", httpContext.TraceIdentifier);
+        if (httpContext.Items.TryGetValue("ErrorCode", out var errorCode))
+        {
+            diagnosticContext.Set("ErrorCode", errorCode);
+        }
     };
 });
 
@@ -287,6 +293,8 @@ app.UseStatusCodePages(async statusContext =>
     {
         return;
     }
+
+    context.Items["ErrorCode"] = errorCode;
 
     var response = new ErrorResponse
     {

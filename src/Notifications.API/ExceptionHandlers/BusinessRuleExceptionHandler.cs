@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Notifications.API.DTOs;
 using Notifications.API.Exceptions;
 
@@ -37,6 +37,8 @@ public class BusinessRuleExceptionHandler : IExceptionHandler
         var type = statusCode == 404
             ? "https://tools.ietf.org/html/rfc7231#section-6.5.4"
             : "https://tools.ietf.org/html/rfc7231#section-6.5.1";
+
+        httpContext.Items["ErrorCode"] = businessException.ErrorCode;
 
         _logger.LogWarning(
             "Error {ErrorCode} en {Endpoint}. CorrelationId: {CorrelationId}",

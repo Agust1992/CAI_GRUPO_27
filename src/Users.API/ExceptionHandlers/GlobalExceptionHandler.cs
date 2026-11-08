@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Users.API.DTOs;
 
 namespace Users.API.ExceptionHandlers;
@@ -19,6 +19,8 @@ public class GlobalExceptionHandler : IExceptionHandler
         CancellationToken cancellationToken)
     {
         var correlationId = httpContext.TraceIdentifier;
+
+        httpContext.Items["ErrorCode"] = "USR-006";
 
         _logger.LogError(
             exception,

@@ -21,7 +21,7 @@ builder.Services.AddSerilog((services, loggerConfiguration) =>
         .MinimumLevel.Information()
         .Enrich.WithProperty("Service", "Notifications.API")
         .Enrich.FromLogContext()
-        .WriteTo.Console()
+        .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] Service={Service} Endpoint={Endpoint} CorrelationId={CorrelationId} ErrorCode={ErrorCode} {Message:lj}{NewLine}{Exception}")
         .WriteTo.File(
             new CompactJsonFormatter(),
             "logs/notifications-.json",
@@ -162,6 +162,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     {
         var message = "Los datos de la notificación son inválidos.";
 
+        context.HttpContext.Items["ErrorCode"] = "NTF-002";
+
         var errorResponse = new ErrorResponse
         {
             Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
@@ -199,6 +201,10 @@ app.UseSerilogRequestLogging(options =>
     {
         diagnosticContext.Set("Endpoint", httpContext.Request.Path.Value);
         diagnosticContext.Set("CorrelationId", httpContext.TraceIdentifier);
+        if (httpContext.Items.TryGetValue("ErrorCode", out var errorCode))
+        {
+            diagnosticContext.Set("ErrorCode", errorCode);
+        }
     };
 });
 
@@ -221,6 +227,66 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// AGREGA EL FORMATO COMÚN A ERRORES HTTP SIN RESPUESTA.
+app.UseStatusCodePages(async statusContext =>
+{
+    var context = statusContext.HttpContext;
+    var status = context.Response.StatusCode;
+    if (status is not (404 or 405 or 415))
+    {
+        return;
+    }
+
+    var (errorCode, errorMessage, detail, type, title) = status switch
+    {
+        404 => (
+            "NTF-001",
+            "Usuario o recurso no encontrado.",
+            "El recurso solicitado no fue encontrado.",
+            "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+            "Not Found"),
+        405 => (
+            "NTF-002",
+            "Método HTTP no permitido.",
+            "El método no está permitido para esta ruta.",
+            "https://tools.ietf.org/html/rfc7231#section-6.5.5",
+            "Method Not Allowed"),
+        _ => (
+            "NTF-002",
+            "Tipo de contenido no soportado.",
+            "Enviá los datos con Content-Type application/json.",
+            "https://tools.ietf.org/html/rfc7231#section-6.5.13",
+            "Unsupported Media Type")
+    };
+
+    context.Items["ErrorCode"] = errorCode;
+    var response = new ErrorResponse
+    {
+        Type = type,
+        Title = title,
+        Status = status,
+        Detail = detail,
+        Instance = context.Request.Path.Value ?? string.Empty,
+        ErrorCode = errorCode,
+        ErrorMessage = errorMessage,
+        CorrelationId = context.TraceIdentifier
+    };
+
+    var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
+        .CreateLogger("Notifications.API.HttpErrors");
+    logger.LogWarning(
+        "HTTP {StatusCode} en {Endpoint}. Código {ErrorCode}: {Message}. CorrelationId: {CorrelationId}",
+        status,
+        context.Request.Path,
+        errorCode,
+        errorMessage,
+        context.TraceIdentifier);
+
+    await context.Response.WriteAsJsonAsync(
+        response,
+        options: null,
+        contentType: "application/problem+json");
+});
 // CREA LA TABLA DE NOTIFICACIONES AL INICIAR LA API.
 using (var scope = app.Services.CreateScope())
 {

@@ -190,6 +190,8 @@ Las bases se crean localmente al iniciar cada API. La configuración deberá rev
 | Users | `USR-005` | Usuario bloqueado por detección de fraude |
 | Users | `USR-006` | Error interno al procesar el usuario |
 | Users | `USR-007` | Usuario no encontrado |
+| Users | `USR-008` | Método HTTP no permitido |
+| Users | `USR-009` | Tipo de contenido no soportado |
 | Notifications | `NTF-001` | Usuario no encontrado |
 | Notifications | `NTF-002` | Datos de la notificación inválidos |
 | Notifications | `NTF-003` | El usuario no tiene notificaciones |

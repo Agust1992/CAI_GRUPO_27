@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.WebUtilities;
 using Users.API.DTOs;
 using Users.API.Exceptions;
@@ -66,6 +66,8 @@ public class BusinessRuleExceptionHandler : IExceptionHandler
             ErrorMessage = error.Message,
             CorrelationId = context.TraceIdentifier
         };
+
+        context.Items["ErrorCode"] = error.ErrorCode;
 
         _logger.LogWarning(
             "Error en {Endpoint}. Código {ErrorCode}: {Message}. CorrelationId: {CorrelationId}",
