@@ -1,4 +1,5 @@
 using Notifications.API.Data;
+using Notifications.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,17 @@ builder.Services.AddOpenApi();
 
 // REGISTRA EL INICIALIZADOR DE LA BASE.
 builder.Services.AddSingleton<DatabaseInitializer>();
+
+builder.Services.AddScoped<NotificationRepository>();
+
+// CONFIGURA EL CLIENTE PARA COMUNICARSE CON USERS.API.
+var usersApiBaseUrl = builder.Configuration["UsersApi:BaseUrl"];
+
+builder.Services.AddHttpClient<UserApiClient>(client =>
+{
+    client.BaseAddress = new Uri(
+        usersApiBaseUrl ?? "http://localhost:5290");
+});
 
 var app = builder.Build();
 
