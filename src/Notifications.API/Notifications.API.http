@@ -4,3 +4,21 @@ GET {{Notifications.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+# Crea una notificación.
+POST {{Notifications.API_HostAddress}}/api/notifications
+Content-Type: application/json
+
+{
+  "usuarioId": "e7ed291e-841e-4592-ab9e-4b1614550aea",
+  "tipo": "Email",
+  "mensaje": "Tu pedido fue confirmado."
+}
+
+###
+
+###
+# Busca las notificaciones del usuario.
+GET {{Notifications.API_HostAddress}}/api/notifications/e7ed291e-841e-4592-ab9e-4b1614550aea
+Accept: application/json
+
+###

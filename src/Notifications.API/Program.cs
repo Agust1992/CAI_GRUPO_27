@@ -74,6 +74,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 // REGISTRA LOS MANEJADORES DE ERRORES.
 builder.Services.AddExceptionHandler<BusinessRuleExceptionHandler>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
