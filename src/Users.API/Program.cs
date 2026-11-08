@@ -8,7 +8,6 @@ using Users.API.DTOs;
 using Users.API.ExceptionHandlers;
 using Users.API.Models;
 using Users.API.Services;
-using System.Text.Json.Nodes;
 using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -109,6 +108,30 @@ builder.Services.AddOpenApi(options =>
                 "Ocurrió un error inesperado.",
                 "/api/users/login", "USR-006",
                 "Error interno al procesar el usuario.");
+        }
+
+
+        if (metodo == "GET" && ruta == "api/users/{id}")
+        {
+            AgregarEjemploError(
+                operation, "500", "Internal Server Error", 500,
+                "Ocurrió un error inesperado.",
+                "/api/users/{id}", "USR-006",
+                "Error interno al procesar el usuario.");
+
+            if (operation.Responses.TryGetValue("404", out var respuesta404) &&
+                respuesta404.Content.TryGetValue(
+                    "application/problem+json",
+                    out var contenido404))
+            {
+                contenido404.Example = new JsonObject
+                {
+                    ["type"] = "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+                    ["title"] = "Not Found",
+                    ["status"] = 404,
+                    ["traceId"] = "00-00000000000000000000000000000000-0000000000000000-00"
+                };
+            }
         }
 
         return Task.CompletedTask;
@@ -260,7 +283,15 @@ static void AgregarEjemploError(
 
     contenido.Example = new JsonObject
     {
-        ["type"] = "https://tools.ietf.org/html/rfc7231",
+        ["type"] = estado switch
+        {
+            400 => "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+            401 => "https://tools.ietf.org/html/rfc7235#section-3.1",
+            403 => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+            409 => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
+            500 => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+            _ => "https://tools.ietf.org/html/rfc7231"
+        },
         ["title"] = titulo,
         ["status"] = estado,
         ["detail"] = detalle,
