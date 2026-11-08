@@ -43,18 +43,18 @@ public class NotificationsController : ControllerBase
     /// <summary>
     /// Devuelve las notificaciones de un usuario.
     /// </summary>
-    /// <param name="usuarioId">Identificador del usuario.</param>
+    /// <param name="userId">Identificador del usuario.</param>
     /// <response code="200">Se devolvió la lista de notificaciones.</response>
     /// <response code="404">El usuario no existe o no tiene notificaciones (NTF-001, NTF-003).</response>
     /// <response code="500">Ocurrió un error interno (NTF-004).</response>
     [ProducesResponseType(typeof(List<NotificationResponse>), StatusCodes.Status200OK, "application/json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound, "application/problem+json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]
-    [HttpGet("{usuarioId:guid}")]
-    public async Task<IActionResult> GetByUsuarioId(Guid usuarioId)
+    [HttpGet("{userId:guid}")]
+    public async Task<IActionResult> GetByUsuarioId(Guid userId)
     {
         var response =
-            await _notificationService.GetByUsuarioIdAsync(usuarioId);
+            await _notificationService.GetByUsuarioIdAsync(userId);
 
         return Ok(response);
     }
