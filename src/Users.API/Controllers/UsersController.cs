@@ -58,6 +58,19 @@ public class UsersController : ControllerBase
     }
 
     // INICIO DEL GET PARA BUSCAR UN USUARIO POR ID.
+    /// <summary>
+    /// Busca los datos públicos de un usuario por su ID.
+    /// </summary>
+    /// <param name="id">Identificador del usuario.</param>
+    /// <response code="200">El usuario fue encontrado.</response>
+    /// <response code="404">No existe un usuario con ese ID.</response>
+    /// <response code="500">Ocurrió un error interno.</response>
+    [ProducesResponseType(typeof(UserLookupResponse), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(
+    typeof(ProblemDetails),
+    StatusCodes.Status404NotFound,
+    "application/problem+json")]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
