@@ -123,4 +123,23 @@ public class UserService
         };
     }
 
+    // Busca un usuario por ID y devuelve solo sus datos públicos.
+    public async Task<UserLookupResponse?> GetByIdAsync(Guid id)
+    {
+        var user = await _userRepository.GetByIdAsync(id);
+
+        if (user is null)
+        {
+            return null;
+        }
+
+        return new UserLookupResponse
+        {
+            Id = user.Id,
+            Nombre = user.Nombre,
+            Apellido = user.Apellido,
+            Email = user.Email
+        };
+    }
+
 }

@@ -68,6 +68,50 @@ public class UserRepository
         };
     }
 
+    // Busca un usuario por ID.
+    public async Task<User?> GetByIdAsync(Guid id)
+    {
+        using var connection = CreateConnection();
+
+        const string sql = """
+            SELECT
+                id AS Id,
+                nombre AS Nombre,
+                apellido AS Apellido,
+                email AS Email,
+                password_hash AS PasswordHash,
+                fecha_registro AS FechaRegistro,
+                activo AS Activo,
+                intentos_fallidos AS IntentosFallidos
+            FROM users
+            WHERE id = @Id;
+            """;
+
+        var datos = await connection.QuerySingleOrDefaultAsync<UserData>(
+            sql,
+            new { Id = id.ToString() });
+
+        if (datos is null)
+        {
+            return null;
+        }
+
+        return new User
+        {
+            Id = Guid.Parse(datos.Id),
+            Nombre = datos.Nombre,
+            Apellido = datos.Apellido,
+            Email = datos.Email,
+            PasswordHash = datos.PasswordHash,
+            FechaRegistro = DateTime.Parse(
+                datos.FechaRegistro,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind),
+            Activo = datos.Activo == 1,
+            IntentosFallidos = datos.IntentosFallidos
+        };
+    }
+
     // Guarda un usuario nuevo en la tabla users.
     public async Task CreateAsync(User user)
     {

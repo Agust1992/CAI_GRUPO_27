@@ -33,4 +33,18 @@ public class UsersController : ControllerBase
         return Ok(response);
     }
 
+    // INICIO DEL GET PARA BUSCAR UN USUARIO POR ID.
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var user = await _userService.GetByIdAsync(id);
+
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(user);
+    }
+
 }
