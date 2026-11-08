@@ -62,9 +62,25 @@ builder.Services.AddOpenApi(options =>
         var ruta = context.Description.RelativePath?.Trim('/');
         var metodo = context.Description.HttpMethod;
 
-        // EJEMPLOS DE ERROR PARA REGISTRAR UN USUARIO.
+        // EJEMPLOS PARA REGISTRAR UN USUARIO.
         if (metodo == "POST" && ruta == "api/users/register")
         {
+            if (operation.Responses.TryGetValue("201", out var respuestaRegistro) &&
+                respuestaRegistro.Content.TryGetValue(
+                    "application/json",
+                    out var contenidoRegistro))
+            {
+                contenidoRegistro.Example = new JsonObject
+                {
+                    ["id"] = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    ["nombre"] = "Ana",
+                    ["apellido"] = "Pérez",
+                    ["email"] = "ana.perez@example.com",
+                    ["fechaRegistro"] = "2026-11-08T18:00:00Z",
+                    ["activo"] = true
+                };
+            }
+
             AgregarEjemploError(
                 operation, "400", "Bad Request", 400,
                 "Los datos del usuario son inválidos.",
@@ -84,9 +100,23 @@ builder.Services.AddOpenApi(options =>
                 "Error interno al procesar el usuario.");
         }
 
-        // EJEMPLOS DE ERROR PARA INICIAR SESIÓN.
+        // EJEMPLOS PARA INICIAR SESIÓN.
         if (metodo == "POST" && ruta == "api/users/login")
         {
+            if (operation.Responses.TryGetValue("200", out var respuestaLogin) &&
+                respuestaLogin.Content.TryGetValue(
+                    "application/json",
+                    out var contenidoLogin))
+            {
+                contenidoLogin.Example = new JsonObject
+                {
+                    ["id"] = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    ["nombre"] = "Ana",
+                    ["apellido"] = "Pérez",
+                    ["email"] = "ana.perez@example.com"
+                };
+            }
+
             AgregarEjemploError(
                 operation, "400", "Bad Request", 400,
                 "Los datos del usuario son inválidos.",
@@ -112,18 +142,17 @@ builder.Services.AddOpenApi(options =>
                 "Error interno al procesar el usuario.");
 
             AgregarEjemplosBloqueo(operation);
-
         }
 
-        // EJEMPLOS DE RESPUESTA PARA BUSCAR UN USUARIO POR ID.
+        // EJEMPLO DE RESPUESTA AL BUSCAR UN USUARIO POR ID.
         if (metodo == "GET" && ruta == "api/users/{id}")
         {
-            if (operation.Responses.TryGetValue("200", out var respuesta200) &&
-                respuesta200.Content.TryGetValue(
+            if (operation.Responses.TryGetValue("200", out var respuestaGet) &&
+                respuestaGet.Content.TryGetValue(
                     "application/json",
-                    out var contenido200))
+                    out var contenidoGet))
             {
-                contenido200.Example = new JsonObject
+                contenidoGet.Example = new JsonObject
                 {
                     ["id"] = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                     ["nombre"] = "Ana",
