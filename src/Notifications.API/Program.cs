@@ -19,6 +19,7 @@ builder.Services.AddSerilog((services, loggerConfiguration) =>
 {
     loggerConfiguration
         .MinimumLevel.Information()
+        .MinimumLevel.Override("Microsoft.AspNetCore.Hosting.Diagnostics", Serilog.Events.LogEventLevel.Warning)
         .Enrich.WithProperty("Service", "Notifications.API")
         .Enrich.FromLogContext()
         .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] Service={Service} Endpoint={Endpoint} CorrelationId={CorrelationId} ErrorCode={ErrorCode} {Message:lj}{NewLine}{Exception}")
@@ -239,6 +240,21 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// REGISTRA EL INICIO CON LA CORRELACIÓN YA ASIGNADA A LA RESPUESTA.
+app.Use(async (context, next) =>
+{
+    var logger = context.RequestServices
+        .GetRequiredService<ILoggerFactory>()
+        .CreateLogger("Notifications.API.RequestStart");
+
+    logger.LogInformation(
+        "Inicio de solicitud HTTP {RequestMethod} en {Endpoint}. CorrelationId: {CorrelationId}",
+        context.Request.Method,
+        context.Request.Path.Value,
+        context.TraceIdentifier);
+
+    await next();
+});
 // AGREGA EL FORMATO COMÚN A ERRORES HTTP SIN RESPUESTA.
 app.UseStatusCodePages(async statusContext =>
 {
