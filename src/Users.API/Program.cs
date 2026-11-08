@@ -49,12 +49,30 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 // REGISTRA EL MANEJADOR DE ERRORES DE NEGOCIO.
 builder.Services.AddExceptionHandler<BusinessRuleExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
 // ACTIVA EL MANEJO GLOBAL DE EXCEPCIONES.
 app.UseExceptionHandler();
+
+// AGREGA UN IDENTIFICADOR A CADA PEDIDO.
+app.Use(async (context, next) =>
+{
+    var correlationId =
+        context.Request.Headers["X-Correlation-Id"].FirstOrDefault()?.Trim();
+
+    if (string.IsNullOrWhiteSpace(correlationId))
+    {
+        correlationId = Guid.NewGuid().ToString();
+    }
+
+    context.TraceIdentifier = correlationId;
+    context.Response.Headers["X-Correlation-Id"] = correlationId;
+
+    await next();
+});
 
 // CREA LA TABLA DE USUARIOS AL INICIAR LA API.
 using (var scope = app.Services.CreateScope())
