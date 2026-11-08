@@ -3,8 +3,23 @@ using Notifications.API.Services;
 using Notifications.API.ExceptionHandlers;
 using Microsoft.AspNetCore.Mvc;
 using Notifications.API.DTOs;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// CONFIGURA SERILOG PARA CONSOLA Y ARCHIVO JSON.
+builder.Services.AddSerilog((services, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .MinimumLevel.Information()
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.File(
+            new CompactJsonFormatter(),
+            "logs/notifications-.json",
+            rollingInterval: RollingInterval.Day);
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -62,7 +77,34 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
+// REGISTRA CADA PEDIDO HTTP CON SERILOG.
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("Endpoint", httpContext.Request.Path.Value);
+        diagnosticContext.Set("CorrelationId", httpContext.TraceIdentifier);
+    };
+});
+
 app.UseExceptionHandler();
+
+// AGREGA UN IDENTIFICADOR A CADA PEDIDO.
+app.Use(async (context, next) =>
+{
+    var correlationId =
+        context.Request.Headers["X-Correlation-Id"].FirstOrDefault()?.Trim();
+
+    if (string.IsNullOrWhiteSpace(correlationId))
+    {
+        correlationId = Guid.NewGuid().ToString();
+    }
+
+    context.TraceIdentifier = correlationId;
+    context.Response.Headers["X-Correlation-Id"] = correlationId;
+
+    await next();
+});
 
 // CREA LA TABLA DE NOTIFICACIONES AL INICIAR LA API.
 using (var scope = app.Services.CreateScope())
