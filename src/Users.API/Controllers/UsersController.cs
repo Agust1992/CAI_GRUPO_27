@@ -42,7 +42,7 @@ public class UsersController : ControllerBase
     /// <response code="200">Las credenciales son correctas.</response>
     /// <response code="400">Los datos enviados son inválidos (USR-002).</response>
     /// <response code="401">Las credenciales no son válidas (USR-003).</response>
-    /// <response code="403">El usuario está bloqueado (USR-004).</response>
+    /// <response code="403">Usuario bloqueado por intentos fallidos (USR-004) o por detección de fraude (USR-005).</response>00
     /// <response code="500">Ocurrió un error interno.</response>
     [ProducesResponseType(typeof(LoginUserResponse), StatusCodes.Status200OK, "application/json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest, "application/problem+json")]
