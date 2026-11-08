@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Notifications.API.DTOs;
 using Serilog;
 using Serilog.Formatting.Compact;
+using Notifications.API.HealthChecks;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +35,12 @@ builder.Services.AddSingleton<DatabaseInitializer>();
 builder.Services.AddScoped<NotificationRepository>();
 
 builder.Services.AddScoped<NotificationService>();
+
+// REGISTRA LA COMPROBACIÓN DE SALUD DE LA BASE DE DATOS.
+builder.Services.AddHealthChecks()
+    .AddCheck<NotificationsDatabaseHealthCheck>(
+        "base de notificaciones",
+        tags: new[] { "ready" });
 
 // CONFIGURA EL CLIENTE PARA COMUNICARSE CON USERS.API.
 var usersApiBaseUrl = builder.Configuration["UsersApi:BaseUrl"];
@@ -128,5 +138,32 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+// PREPARA LA RESPUESTA DE SALUD EN FORMATO JSON.
+Task EscribirEstadoSalud(HttpContext context, HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+
+    var respuesta = JsonSerializer.Serialize(new
+    {
+        status = report.Status.ToString()
+    });
+
+    return context.Response.WriteAsync(respuesta);
+}
+
+// PUBLICA LA COMPROBACIÓN DE LA BASE DE DATOS.
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = EscribirEstadoSalud
+});
+
+// PUBLICA LA COMPROBACIÓN DE QUE LA API ESTÁ ENCENDIDA.
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live"),
+    ResponseWriter = EscribirEstadoSalud
+});
 
 app.Run();
