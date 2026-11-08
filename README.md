@@ -125,10 +125,12 @@ Warning y los inesperados como Error, sin mostrar detalles internos al cliente.
 
 ## Pruebas y evidencias
 
-Las [pruebas HTTP](tests/README.md) compilan e inician las APIs en puertos
-libres, usan bases temporales y detienen sus procesos al terminar. El servidor
-`tests/Dependencias` es una simulacion para provocar estados y fallas: no es
-Orders real ni sustituye el trabajo de otro integrante.
+El [procedimiento de prueba](tests/README.md) permite comprobar las operaciones,
+validaciones y errores desde Swagger. Los archivos `.http` de cada API incluyen
+solicitudes de ejemplo. Usar datos de prueba y registrar el resultado observado.
+Las herramientas automatizadas utilizadas durante el desarrollo se conservan
+fuera del repo; no son necesarias para ejecutar las APIs ni forman parte de
+esta entrega. Una copia nueva del repo no ejecuta esas pruebas automaticamente.
 
 Las capturas muestran respuestas reales de Swagger con los campos del catalogo:
 
@@ -147,6 +149,5 @@ y con la llamada de Carrito a Productos.
 El [ejemplo de salud](docs/EJEMPLO_SALUD.md) sirve para los otros integrantes.
 El [contrato con Orders](docs/INTEGRACION_ORDERS.md) explica la validacion del
 borrado. Todavia falta incorporar los otros tres servicios, acordar sus
-puertos, probar las integraciones reales y revisar el conjunto antes de integrar
-esta rama en `main`.
+puertos, probar las integraciones reales y revisar el conjunto antes de entregar.
 

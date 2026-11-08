@@ -16,8 +16,10 @@ dotnet run --project src/Products.API --launch-profile http
 Swagger queda en `http://localhost:5208/swagger`. Las solicitudes de ejemplo
 estan en `Products.API.http`. Reemplazar `ProductId` por el Guid de un alta.
 Las pruebas sobre una base propia agregan o modifican datos: usar productos de
-prueba. Las comprobaciones automaticas de este avance usaron una base temporal
-separada, sin tocar `products.db`.
+prueba. El [procedimiento manual](../../tests/README.md) indica los casos y
+resultados esperados. Las herramientas automatizadas de desarrollo se conservan
+fuera del repo; sus resultados anteriores no significan que haya scripts de
+prueba incluidos en esta entrega.
 
 ## Comportamiento de este avance
 
@@ -50,8 +52,8 @@ a Orders. Serilog registra inicio/fin y duracion, con Service, Endpoint y
 CorrelationId. Los errores de negocio son Warning y los inesperados Error.
 Los archivos son JSON estructurado; ya no se guardan cuerpos de solicitudes.
 La consola muestra fecha, nivel, Service, Endpoint, CorrelationId y errorCode
-cuando corresponde, ademas del mensaje. Las pruebas verifican esos campos
-tambien en el texto de consola, no solo en los archivos JSON.
+cuando corresponde, ademas del mensaje. Al probar un error se puede relacionar
+su correlationId con la consola y con el evento del archivo JSON.
 
 Swagger incorpora comentarios XML, esquemas con los campos propios de error y
 ejemplos JSON de alta, modificacion, listado, detalle y errores, incluido PRD-004.
@@ -94,6 +96,11 @@ reconstruir precision que la base vieja ya pudiera haber perdido.
 
 ## Casos comprobados
 
+Este apartado registra comprobaciones realizadas durante el desarrollo con
+herramientas auxiliares y bases temporales. Para repetir los casos de la demo
+desde la entrega, seguir el procedimiento manual enlazado arriba. Ese guion no
+reproduce las pruebas automaticas de concurrencia ni la alteracion de tablas.
+
 Alta, consulta, filtros solos y combinados, modificacion, borrado y recurso
 inexistente. Nombre de 100/101 caracteres, descripcion de 500/501, campos
 nulos o ausentes, precio cero o negativo y stock cero o negativo. Los pedidos
@@ -131,8 +138,7 @@ El ejemplo para los otros integrantes esta en `docs/EJEMPLO_SALUD.md`.
 - Revisar con el grupo el conjunto de evidencias y la demo de entrega. Las
   capturas actuales de errores estan en docs/capturas.
 
-Las pruebas repetibles estan en tests/ProbarProductos.ps1 y no usan datos de
-trabajo. Para cerrar los avisos de dependencias se actualizaron
+Para cerrar los avisos de dependencias se actualizaron
 Microsoft.Data.Sqlite a 10.0.14, sin suprimirlos. Se retiro el panel opcional
 HealthChecks UI y su recolector, que fallaba al iniciar por una dependencia
 faltante. Tambien se quitaron sus paquetes de almacenamiento y KubernetesClient.
