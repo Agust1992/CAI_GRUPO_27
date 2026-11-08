@@ -5,7 +5,22 @@ using Users.API.Services;
 using Users.API.ExceptionHandlers;
 using Microsoft.AspNetCore.Mvc;
 using Users.API.DTOs;
+using Serilog;
+using Serilog.Formatting.Compact;
 var builder = WebApplication.CreateBuilder(args);
+
+// CONFIGURA SERILOG PARA CONSOLA Y ARCHIVO JSON.
+builder.Services.AddSerilog((services, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .MinimumLevel.Information()
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.File(
+            new CompactJsonFormatter(),
+            "logs/users-.json",
+            rollingInterval: RollingInterval.Day);
+});
 
 // Add services to the container.
 
@@ -53,6 +68,16 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+// REGISTRA CADA PEDIDO HTTP CON SERILOG.
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("Endpoint", httpContext.Request.Path.Value);
+        diagnosticContext.Set("CorrelationId", httpContext.TraceIdentifier);
+    };
+});
 
 // ACTIVA EL MANEJO GLOBAL DE EXCEPCIONES.
 app.UseExceptionHandler();
