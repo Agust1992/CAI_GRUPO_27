@@ -254,6 +254,58 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// AGREGA EL FORMATO COMÚN A ERRORES HTTP SIN RESPUESTA.
+app.UseStatusCodePages(async statusContext =>
+{
+    var context = statusContext.HttpContext;
+    var status = context.Response.StatusCode;
+
+    var (errorCode, errorMessage, detail, type, title) = status switch
+    {
+        404 => (
+            "USR-007",
+            "Usuario no encontrado.",
+            "El recurso solicitado no fue encontrado.",
+            "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+            "Not Found"),
+        405 => (
+            "USR-008",
+            "Método HTTP no permitido.",
+            "El método no está permitido para esta ruta.",
+            "https://tools.ietf.org/html/rfc7231#section-6.5.5",
+            "Method Not Allowed"),
+        415 => (
+            "USR-009",
+            "Tipo de contenido no soportado.",
+            "Enviá los datos con Content-Type application/json.",
+            "https://tools.ietf.org/html/rfc7231#section-6.5.13",
+            "Unsupported Media Type"),
+        _ => (string.Empty, string.Empty, string.Empty, string.Empty, string.Empty)
+    };
+
+    if (string.IsNullOrEmpty(errorCode))
+    {
+        return;
+    }
+
+    var response = new ErrorResponse
+    {
+        Type = type,
+        Title = title,
+        Status = status,
+        Detail = detail,
+        Instance = context.Request.Path.Value ?? string.Empty,
+        ErrorCode = errorCode,
+        ErrorMessage = errorMessage,
+        CorrelationId = context.TraceIdentifier
+    };
+
+    await context.Response.WriteAsJsonAsync(
+        response,
+        options: null,
+        contentType: "application/problem+json");
+});
+
 // CREA LA TABLA DE USUARIOS AL INICIAR LA API.
 using (var scope = app.Services.CreateScope())
 {
@@ -347,7 +399,7 @@ static void AgregarEjemploError(
             403 => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
             409 => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
             500 => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-            404 => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+
             _ => "https://tools.ietf.org/html/rfc7231"
         },
         ["title"] = titulo,

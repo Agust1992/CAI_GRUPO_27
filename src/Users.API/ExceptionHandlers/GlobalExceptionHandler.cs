@@ -22,7 +22,7 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         _logger.LogError(
             exception,
-            "Error inesperado en {Endpoint}. CorrelationId: {CorrelationId}",
+            "Error USR-006 en {Endpoint}. CorrelationId: {CorrelationId}",
             httpContext.Request.Path,
             correlationId);
 
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             Title = "Internal Server Error",
             Status = 500,
             Detail = "Ocurrió un error inesperado.",
-            Instance = httpContext.Request.Path,
+            Instance = httpContext.Request.Path.Value ?? string.Empty,
             ErrorCode = "USR-006",
             ErrorMessage = "Error interno al procesar el usuario.",
             CorrelationId = correlationId

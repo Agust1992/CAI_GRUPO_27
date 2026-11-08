@@ -94,7 +94,7 @@ Users registra usuarios, inicia sesión, bloquea cuentas tras intentos fallidos 
 Para iniciar:
 
 ```powershell
-dotnet run --project src/Users.API/Users.API.csproj --launch-profile http
+dotnet run --project src/Users.API/Users.API.csproj --launch-profile https
 ```
 
 Swagger: `http://localhost:5290/swagger`
@@ -117,7 +117,7 @@ Notifications registra notificaciones y permite consultar las de un usuario. Ant
 Para iniciar:
 
 ```powershell
-dotnet run --project src/Notifications.API/Notifications.API.csproj --launch-profile http
+dotnet run --project src/Notifications.API/Notifications.API.csproj --launch-profile https
 ```
 
 Swagger: `http://localhost:5103/swagger`
@@ -153,6 +153,8 @@ Endpoints:
 | Users | `USR-005` | Usuario bloqueado por detección de fraude |
 | Users | `USR-006` | Error interno al procesar el usuario |
 | Users | `USR-007` | Usuario no encontrado |
+| Users | `USR-008` | Método HTTP no permitido |
+| Users | `USR-009` | Tipo de contenido no soportado |
 | Notifications | `NTF-001` | Usuario no encontrado |
 | Notifications | `NTF-002` | Datos de la notificación inválidos |
 | Notifications | `NTF-003` | El usuario no tiene notificaciones |

@@ -99,6 +99,11 @@ public class UserService
             if (user.IntentosFallidos >= 3)
             {
                 user.Activo = false;
+                await _userRepository.UpdateLoginStatusAsync(user);
+
+                throw new BusinessRuleException(
+                    "USR-004",
+                    "Usuario bloqueado por demasiados intentos fallidos.");
             }
 
             await _userRepository.UpdateLoginStatusAsync(user);

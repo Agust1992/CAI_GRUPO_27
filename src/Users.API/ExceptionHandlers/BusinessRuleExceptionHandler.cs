@@ -39,19 +39,19 @@ public class BusinessRuleExceptionHandler : IExceptionHandler
 
         var detail = status switch
         {
-            404 => "El recurso solicitado no fue encontrado.",
             409 => "Ya existe un recurso con esos datos.",
             401 => "Las credenciales no son válidas.",
             403 => "El acceso está prohibido.",
+            404 => "El recurso solicitado no fue encontrado.",
             _ => "Los datos del usuario son inválidos."
         };
 
         var type = status switch
         {
-            404 => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
             409 => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
             401 => "https://tools.ietf.org/html/rfc7235#section-3.1",
             403 => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+            404 => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
             _ => "https://tools.ietf.org/html/rfc7231#section-6.5.1"
         };
 
@@ -68,9 +68,11 @@ public class BusinessRuleExceptionHandler : IExceptionHandler
         };
 
         _logger.LogWarning(
-            "{ErrorCode}: {Message}",
+            "Error en {Endpoint}. Código {ErrorCode}: {Message}. CorrelationId: {CorrelationId}",
+            context.Request.Path,
             error.ErrorCode,
-            error.Message);
+            error.Message,
+            context.TraceIdentifier);
 
         context.Response.StatusCode = status;
 

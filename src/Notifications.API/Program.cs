@@ -94,7 +94,7 @@ builder.Services.AddOpenApi(options =>
                 """);
         }
 
-        if (metodo == "GET" && ruta == "api/notifications/{usuarioId}")
+        if (metodo == "GET" && ruta == "api/notifications/{userId}")
         {
             AgregarEjemplo("404", """
                 {
