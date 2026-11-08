@@ -110,6 +110,9 @@ builder.Services.AddOpenApi(options =>
                 "Ocurrió un error inesperado.",
                 "/api/users/login", "USR-006",
                 "Error interno al procesar el usuario.");
+
+            AgregarEjemplosBloqueo(operation);
+
         }
 
         // EJEMPLOS DE RESPUESTA PARA BUSCAR UN USUARIO POR ID.
@@ -315,5 +318,55 @@ static void AgregarEjemploError(
         ["errorCode"] = codigoError,
         ["errorMessage"] = mensajeError,
         ["correlationId"] = "11111111-1111-1111-1111-111111111111"
+    };
+}
+
+static void AgregarEjemplosBloqueo(OpenApiOperation operation)
+{
+    if (!operation.Responses.TryGetValue("403", out var respuesta))
+    {
+        return;
+    }
+
+    if (!respuesta.Content.TryGetValue(
+            "application/problem+json",
+            out var contenido))
+    {
+        return;
+    }
+
+    contenido.Example = null;
+    contenido.Examples = new Dictionary<string, IOpenApiExample>
+    {
+        ["USR-004 - Intentos fallidos"] = new OpenApiExample
+        {
+            Summary = "Usuario bloqueado por intentos fallidos",
+            Value = new JsonObject
+            {
+                ["type"] = "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+                ["title"] = "Forbidden",
+                ["status"] = 403,
+                ["detail"] = "El acceso está prohibido.",
+                ["instance"] = "/api/users/login",
+                ["errorCode"] = "USR-004",
+                ["errorMessage"] = "Usuario bloqueado por demasiados intentos fallidos.",
+                ["correlationId"] = "11111111-1111-1111-1111-111111111111"
+            }
+        },
+        ["USR-005 - Detección de fraude"] = new OpenApiExample
+        {
+            Summary = "Usuario bloqueado por detección de fraude",
+            Value = new JsonObject
+            {
+                ["type"] = "https://tools.ietf.org/html/rfc7231#section-6.5.3",
+                ["title"] = "Forbidden",
+                ["status"] = 403,
+                ["detail"] = "El acceso está prohibido.",
+                ["instance"] = "/api/users/login",
+                ["errorCode"] = "USR-005",
+                ["errorMessage"] = "Usuario bloqueado por detección de fraude.",
+                ["correlationId"] = "11111111-1111-1111-1111-111111111111"
+            }
+        }
     };
 }
