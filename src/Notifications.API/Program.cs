@@ -9,7 +9,8 @@ using Notifications.API.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
-
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +29,102 @@ builder.Services.AddSerilog((services, loggerConfiguration) =>
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+
+builder.Services.AddOpenApi(options =>
+{
+    options.AddOperationTransformer((operation, context, cancellationToken) =>
+    {
+        var ruta = context.Description.RelativePath?.TrimStart('/');
+        var metodo = context.Description.HttpMethod;
+
+        void AgregarEjemplo(string codigoEstado, string json)
+        {
+            if (!operation.Responses.TryGetValue(codigoEstado, out var respuesta)
+                || respuesta.Content is null)
+            {
+                return;
+            }
+
+            foreach (var contenido in respuesta.Content.Values)
+            {
+                contenido.Example = JsonNode.Parse(json);
+            }
+        }
+
+        if (metodo == "POST" && ruta == "api/notifications/send")
+        {
+            AgregarEjemplo("400", """
+                {
+                  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                  "title": "Bad Request",
+                  "status": 400,
+                  "detail": "Los datos de la notificación son inválidos.",
+                  "instance": "/api/notifications/send",
+                  "errorCode": "NTF-002",
+                  "errorMessage": "Los datos de la notificación son inválidos.",
+                  "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
+                }
+                """);
+
+            AgregarEjemplo("404", """
+                {
+                  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+                  "title": "Not Found",
+                  "status": 404,
+                  "detail": "El recurso solicitado no fue encontrado.",
+                  "instance": "/api/notifications/send",
+                  "errorCode": "NTF-001",
+                  "errorMessage": "Usuario no encontrado.",
+                  "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
+                }
+                """);
+
+            AgregarEjemplo("500", """
+                {
+                  "type": "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+                  "title": "Internal Server Error",
+                  "status": 500,
+                  "detail": "Error interno al procesar la notificación.",
+                  "instance": "/api/notifications/send",
+                  "errorCode": "NTF-004",
+                  "errorMessage": "Error interno al procesar la notificación.",
+                  "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
+                }
+                """);
+        }
+
+        if (metodo == "GET" && ruta == "api/notifications/{usuarioId}")
+        {
+            AgregarEjemplo("404", """
+                {
+                  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+                  "title": "Not Found",
+                  "status": 404,
+                  "detail": "El recurso solicitado no fue encontrado.",
+                  "instance": "/api/notifications/e7ed291e-841e-4592-ab9e-4b1614550aea",
+                  "errorCode": "NTF-003",
+                  "errorMessage": "No se encontraron notificaciones para el usuario.",
+                  "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
+                }
+                """);
+
+            AgregarEjemplo("500", """
+                {
+                  "type": "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+                  "title": "Internal Server Error",
+                  "status": 500,
+                  "detail": "Error interno al procesar la notificación.",
+                  "instance": "/api/notifications/e7ed291e-841e-4592-ab9e-4b1614550aea",
+                  "errorCode": "NTF-004",
+                  "errorMessage": "Error interno al procesar la notificación.",
+                  "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
+                }
+                """);
+        }
+
+        return Task.CompletedTask;
+    });
+});
 
 // REGISTRA EL INICIALIZADOR DE LA BASE.
 builder.Services.AddSingleton<DatabaseInitializer>();
