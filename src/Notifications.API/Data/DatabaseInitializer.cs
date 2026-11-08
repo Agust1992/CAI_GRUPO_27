@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 
 namespace Notifications.API.Data;
 
-// Crea la tabla y agrega los campos nuevos si la base ya existía.
+// Crea la tabla nueva y adapta la anterior sin perder las notificaciones.
 public class DatabaseInitializer
 {
     private readonly IConfiguration _configuration;
@@ -64,9 +64,49 @@ public class DatabaseInitializer
                     """);
             }
         }
+
+        // Si existe la columna vieja, reconstruye la tabla sin ella.
+        if (columnas.Contains("fecha_creacion"))
+        {
+            using var transaction = connection.BeginTransaction();
+
+            connection.Execute("DROP TABLE IF EXISTS notifications_new;", transaction: transaction);
+
+            connection.Execute("""
+                CREATE TABLE notifications_new (
+                    id TEXT NOT NULL PRIMARY KEY,
+                    usuario_id TEXT NOT NULL,
+                    tipo TEXT NOT NULL,
+                    mensaje TEXT NOT NULL,
+                    estado TEXT NOT NULL,
+                    fecha_envio TEXT NOT NULL
+                );
+                """, transaction: transaction);
+
+            connection.Execute("""
+                INSERT INTO notifications_new (
+                    id, usuario_id, tipo, mensaje, estado, fecha_envio
+                )
+                SELECT
+                    id,
+                    usuario_id,
+                    tipo,
+                    mensaje,
+                    COALESCE(estado, 'Enviada'),
+                    COALESCE(fecha_envio, fecha_creacion)
+                FROM notifications;
+                """, transaction: transaction);
+
+            connection.Execute("DROP TABLE notifications;", transaction: transaction);
+            connection.Execute("""
+                ALTER TABLE notifications_new RENAME TO notifications;
+                """, transaction: transaction);
+
+            transaction.Commit();
+        }
     }
 
-    // Representa una columna devuelta por SQLite.
+    // Representa una columna que SQLite devuelve al consultar la tabla.
     private class ColumnInfo
     {
         public string Name { get; set; } = string.Empty;
