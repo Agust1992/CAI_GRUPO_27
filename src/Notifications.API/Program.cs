@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // CONFIGURA SERILOG PARA CONSOLA Y ARCHIVO JSON.
@@ -38,6 +39,10 @@ builder.Services.AddScoped<NotificationService>();
 
 // REGISTRA LA COMPROBACIÓN DE SALUD DE LA BASE DE DATOS.
 builder.Services.AddHealthChecks()
+    .AddCheck(
+        "api",
+        () => HealthCheckResult.Healthy(),
+        tags: new[] { "live" })
     .AddCheck<NotificationsDatabaseHealthCheck>(
         "base de notificaciones",
         tags: new[] { "ready" });
@@ -152,6 +157,12 @@ Task EscribirEstadoSalud(HttpContext context, HealthReport report)
     return context.Response.WriteAsync(respuesta);
 }
 
+
+// PUBLICA EL ESTADO GENERAL DE LA API Y LA BASE DE DATOS.
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = EscribirEstadoSalud
+});
 // PUBLICA LA COMPROBACIÓN DE LA BASE DE DATOS.
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
