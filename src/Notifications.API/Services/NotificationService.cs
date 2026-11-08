@@ -46,7 +46,8 @@ public class NotificationService
             UsuarioId = request.UsuarioId.Value,
             Tipo = request.Tipo,
             Mensaje = request.Mensaje,
-            FechaCreacion = DateTime.UtcNow
+            Estado = "Enviada",
+            FechaEnvio = DateTime.UtcNow
         };
 
         await _notificationRepository.CreateAsync(notification);
@@ -57,7 +58,8 @@ public class NotificationService
             UsuarioId = notification.UsuarioId,
             Tipo = notification.Tipo,
             Mensaje = notification.Mensaje,
-            FechaCreacion = notification.FechaCreacion
+            Estado = notification.Estado,
+            FechaEnvio = notification.FechaEnvio
         };
     }
 
@@ -91,7 +93,8 @@ public class NotificationService
             UsuarioId = notification.UsuarioId,
             Tipo = notification.Tipo,
             Mensaje = notification.Mensaje,
-            FechaCreacion = notification.FechaCreacion
+            Estado = notification.Estado,
+            FechaEnvio = notification.FechaEnvio
         }).ToList();
     }
 }

@@ -16,7 +16,7 @@ public class NotificationsController : ControllerBase
     }
 
     // INICIO DEL POST PARA CREAR UNA NOTIFICACIÓN.
-    [HttpPost]
+    [HttpPost("send")]
     public async Task<IActionResult> Create(CreateNotificationRequest request)
     {
         var response = await _notificationService.CreateAsync(request);

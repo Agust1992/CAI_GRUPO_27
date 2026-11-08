@@ -5,7 +5,7 @@ Accept: application/json
 
 ###
 # Crea una notificación.
-POST {{Notifications.API_HostAddress}}/api/notifications
+POST {{Notifications.API_HostAddress}}/api/notifications/send
 Content-Type: application/json
 
 {
