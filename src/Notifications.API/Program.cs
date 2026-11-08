@@ -50,6 +50,8 @@ builder.Services.AddHealthChecks()
 // CONFIGURA EL CLIENTE PARA COMUNICARSE CON USERS.API.
 var usersApiBaseUrl = builder.Configuration["UsersApi:BaseUrl"];
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddHttpClient<UserApiClient>(client =>
 {
     client.BaseAddress = new Uri(
