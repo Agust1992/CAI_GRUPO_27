@@ -62,57 +62,22 @@ builder.Services.AddOpenApi(options =>
         var ruta = context.Description.RelativePath?.Trim('/');
         var metodo = context.Description.HttpMethod;
 
-        if (metodo == "POST" && ruta == "api/users/register")
-        {
-            AgregarEjemploError(
-                operation, "400", "Bad Request", 400,
-                "Los datos del usuario son inválidos.",
-                "/api/users/register", "USR-002",
-                "Los datos del usuario son inválidos.");
-
-            AgregarEjemploError(
-                operation, "409", "Conflict", 409,
-                "Ya existe un recurso con esos datos.",
-                "/api/users/register", "USR-001",
-                "El email ya está registrado.");
-
-            AgregarEjemploError(
-                operation, "500", "Internal Server Error", 500,
-                "Ocurrió un error inesperado.",
-                "/api/users/register", "USR-006",
-                "Error interno al procesar el usuario.");
-        }
-
-        if (metodo == "POST" && ruta == "api/users/login")
-        {
-            AgregarEjemploError(
-                operation, "400", "Bad Request", 400,
-                "Los datos del usuario son inválidos.",
-                "/api/users/login", "USR-002",
-                "Los datos del usuario son inválidos.");
-
-            AgregarEjemploError(
-                operation, "401", "Unauthorized", 401,
-                "Las credenciales no son válidas.",
-                "/api/users/login", "USR-003",
-                "Credenciales incorrectas.");
-
-            AgregarEjemploError(
-                operation, "403", "Forbidden", 403,
-                "El acceso está prohibido.",
-                "/api/users/login", "USR-004",
-                "Usuario bloqueado por demasiados intentos fallidos.");
-
-            AgregarEjemploError(
-                operation, "500", "Internal Server Error", 500,
-                "Ocurrió un error inesperado.",
-                "/api/users/login", "USR-006",
-                "Error interno al procesar el usuario.");
-        }
-
-
         if (metodo == "GET" && ruta == "api/users/{id}")
         {
+            if (operation.Responses.TryGetValue("200", out var respuesta200) &&
+                respuesta200.Content.TryGetValue(
+                    "application/json",
+                    out var contenido200))
+            {
+                contenido200.Example = new JsonObject
+                {
+                    ["id"] = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    ["nombre"] = "Ana",
+                    ["apellido"] = "Pérez",
+                    ["email"] = "ana.perez@example.com"
+                };
+            }
+
             AgregarEjemploError(
                 operation, "500", "Internal Server Error", 500,
                 "Ocurrió un error inesperado.",
