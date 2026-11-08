@@ -1,12 +1,15 @@
-using Users.API.Data;
 using Microsoft.AspNetCore.Identity;
-using Users.API.Models;
-using Users.API.Services;
-using Users.API.ExceptionHandlers;
 using Microsoft.AspNetCore.Mvc;
-using Users.API.DTOs;
 using Serilog;
 using Serilog.Formatting.Compact;
+using System.Text.Json.Nodes;
+using Users.API.Data;
+using Users.API.DTOs;
+using Users.API.ExceptionHandlers;
+using Users.API.Models;
+using Users.API.Services;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 var builder = WebApplication.CreateBuilder(args);
 
 // CONFIGURA SERILOG PARA CONSOLA Y ARCHIVO JSON.
@@ -48,7 +51,64 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddOperationTransformer((operation, context, cancellationToken) =>
+    {
+        var ruta = context.Description.RelativePath?.Trim('/');
+        var metodo = context.Description.HttpMethod;
+
+        if (metodo == "POST" && ruta == "api/users/register")
+        {
+            AgregarEjemploError(
+                operation, "400", "Bad Request", 400,
+                "Los datos del usuario son inválidos.",
+                "/api/users/register", "USR-002",
+                "Los datos del usuario son inválidos.");
+
+            AgregarEjemploError(
+                operation, "409", "Conflict", 409,
+                "Ya existe un recurso con esos datos.",
+                "/api/users/register", "USR-001",
+                "El email ya está registrado.");
+
+            AgregarEjemploError(
+                operation, "500", "Internal Server Error", 500,
+                "Ocurrió un error inesperado.",
+                "/api/users/register", "USR-006",
+                "Error interno al procesar el usuario.");
+        }
+
+        if (metodo == "POST" && ruta == "api/users/login")
+        {
+            AgregarEjemploError(
+                operation, "400", "Bad Request", 400,
+                "Los datos del usuario son inválidos.",
+                "/api/users/login", "USR-002",
+                "Los datos del usuario son inválidos.");
+
+            AgregarEjemploError(
+                operation, "401", "Unauthorized", 401,
+                "Las credenciales no son válidas.",
+                "/api/users/login", "USR-003",
+                "Credenciales incorrectas.");
+
+            AgregarEjemploError(
+                operation, "403", "Forbidden", 403,
+                "El acceso está prohibido.",
+                "/api/users/login", "USR-004",
+                "Usuario bloqueado por demasiados intentos fallidos.");
+
+            AgregarEjemploError(
+                operation, "500", "Internal Server Error", 500,
+                "Ocurrió un error inesperado.",
+                "/api/users/login", "USR-006",
+                "Error interno al procesar el usuario.");
+        }
+
+        return Task.CompletedTask;
+    });
+});
 
 // REGISTRA EL SERVICIO DE USUARIOS.
 builder.Services.AddScoped<UserService>();
@@ -126,3 +186,37 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+static void AgregarEjemploError(
+    OpenApiOperation operation,
+    string codigoRespuesta,
+    string titulo,
+    int estado,
+    string detalle,
+    string ruta,
+    string codigoError,
+    string mensajeError)
+{
+    if (!operation.Responses.TryGetValue(codigoRespuesta, out var respuesta))
+    {
+        return;
+    }
+
+    if (!respuesta.Content.TryGetValue(
+            "application/problem+json",
+            out var contenido))
+    {
+        return;
+    }
+
+    contenido.Example = new JsonObject
+    {
+        ["type"] = "https://tools.ietf.org/html/rfc7231",
+        ["title"] = titulo,
+        ["status"] = estado,
+        ["detail"] = detalle,
+        ["instance"] = ruta,
+        ["errorCode"] = codigoError,
+        ["errorMessage"] = mensajeError,
+        ["correlationId"] = "11111111-1111-1111-1111-111111111111"
+    };
+}
