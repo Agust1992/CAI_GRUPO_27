@@ -17,6 +17,7 @@ builder.Services.AddSerilog((services, loggerConfiguration) =>
 {
     loggerConfiguration
         .MinimumLevel.Information()
+        .Enrich.WithProperty("Service", "Users.API")
         .Enrich.FromLogContext()
         .WriteTo.Console()
         .WriteTo.File(
