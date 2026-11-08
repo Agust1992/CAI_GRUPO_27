@@ -27,10 +27,10 @@ public class NotificationsController : ControllerBase
     /// <response code="400">Los datos recibidos son inválidos (NTF-002).</response>
     /// <response code="404">El usuario destinatario no existe (NTF-001).</response>
     /// <response code="500">Ocurrió un error interno (NTF-004).</response>
-    [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status201Created, "application/json")]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound, "application/problem+json")]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]
     [HttpPost("send")]
     public async Task<IActionResult> Create(CreateNotificationRequest request)
     {
@@ -47,9 +47,9 @@ public class NotificationsController : ControllerBase
     /// <response code="200">Se devolvió la lista de notificaciones.</response>
     /// <response code="404">El usuario no existe o no tiene notificaciones (NTF-001, NTF-003).</response>
     /// <response code="500">Ocurrió un error interno (NTF-004).</response>
-    [ProducesResponseType(typeof(List<NotificationResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(List<NotificationResponse>), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound, "application/problem+json")]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]
     [HttpGet("{usuarioId:guid}")]
     public async Task<IActionResult> GetByUsuarioId(Guid usuarioId)
     {
