@@ -64,7 +64,5 @@ public static class MiddlewareExtensions
             Predicate = registro => registro.Tags.Contains("live"),
             ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
         });
-
-        app.MapHealthChecksUI(setup => setup.UIPath = "/health-ui");
     }
 }

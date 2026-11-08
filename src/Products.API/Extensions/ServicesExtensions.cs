@@ -57,11 +57,5 @@ public static class ServicesExtensions
             .AddCheck<SqliteHealthCheck>("sqlite-db", tags: ["database", "ready"],
                 timeout: TimeSpan.FromSeconds(5))
             .AddCheck<ApiStatusCheck>("api-status", tags: ["api", "live"]);
-
-        services.AddHealthChecksUI(setup =>
-        {
-            setup.SetEvaluationTimeInSeconds(600);
-            setup.AddHealthCheckEndpoint("Products.API", "/health");
-        }).AddInMemoryStorage();
     }
 }
