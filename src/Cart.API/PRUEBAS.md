@@ -37,9 +37,9 @@ ni se agregan funciones de checkout o pagos.
 
 ## Reglas y decisiones
 
-POST suma a la cantidad existente y PUT la reemplaza. Esta regla se acordo
-con Luciano. Al sumar se compara el total resultante contra el stock, no
-solamente lo que llega en el ultimo pedido. La operacion se guarda dentro de
+POST suma a la cantidad existente y PUT la reemplaza. Al sumar se compara el
+total resultante contra el stock, no solamente lo que llega en el ultimo
+pedido. La operacion se guarda dentro de
 una transaccion para no perder sumas simultaneas.
 
 Antes de guardar un alta o una modificacion se consulta Products.API para
@@ -80,18 +80,22 @@ Serilog escribe consola y archivos JSON diarios en logs, que no se suben al
 repositorio. Los eventos incluyen Service, Endpoint y CorrelationId. Se
 registran inicio, fin y duracion; los errores de negocio son Warning y los
 inesperados Error. No se registran cuerpos de solicitudes ni secretos.
+La consola muestra fecha, nivel, Service, Endpoint, CorrelationId y errorCode
+cuando corresponde. Al probar un error, relacionar su correlationId con los
+eventos de consola y del archivo JSON.
 
 Cart conserva un X-Correlation-Id recibido de hasta 100 caracteres ASCII sin
 espacios, o genera un Guid. Lo devuelve como encabezado y lo propaga a
 Productos. Falta coordinar con Christian y Agustin el ejemplo comun definitivo;
 Productos tambien conserva el encabezado y lo envia a Orders. La propagacion
-se prueba con Productos real y con la dependencia de Orders simulada.
+se comprobo durante el desarrollo con Productos real y con Orders simulado.
+La prueba con Orders real sigue pendiente de la integracion del grupo.
 
 ## Persistencia y pendientes
 
 Se usa SQLite/Dapper siguiendo la base MiniApi, con tablas carts y cart_items
-propias. No se usa el repositorio generico de StockPulse. Sigue pendiente
-confirmar la libreria de persistencia mencionada en la consigna.
+propias. Esa es la base de persistencia adoptada por el equipo a partir de
+la MiniApi.
 
 Swagger incluye ejemplos JSON de solicitudes, respuestas y errores. Los errores
 de validacion y de HTTP, incluidos 405 y 415, conservan el formato comun. El PUT
@@ -99,17 +103,15 @@ documenta los dos casos de 404: carrito inexistente e item inexistente.
 Se actualizo Microsoft.Data.Sqlite a 10.0.14 para dejar de usar la dependencia
 nativa con la advertencia de seguridad detectada en la auditoria.
 
-Antes de cerrar: revisar los contratos comunes con el grupo, confirmar la
-persistencia de la catedra y probar el conjunto con Orders real.
+Antes de cerrar: revisar los contratos comunes con el grupo y probar el
+conjunto con Orders real. Las capturas actuales de errores estan en docs/capturas.
 
-Las pruebas de este avance usan dos APIs reales con bases temporales. Tambien
-se usa un servidor simulado para respuestas invalidas, errores y timeout de
-Productos. Esa simulacion no reemplaza la prueba real de integracion.
+El [procedimiento manual](../../tests/README.md) permite probar desde Swagger
+el agregado, reemplazo, stock, validaciones, retiro de items y vaciado. Tambien
+indica como revisar errores de dependencias, salud, logs y conservacion de datos
+al reiniciar, usando un entorno de prueba.
 
-Desde la raiz del repositorio, ejecutar `tests/ProbarCarrito.ps1` con el SDK de
-.NET 10 activo. Verifica POST acumulativo, PUT de reemplazo, cantidades
-invalidas, carrito o producto inexistente, stock insuficiente, usuarios
-independientes, sumas simultaneas, borrado, vaciado y conservacion de datos al
-reiniciar. Incluye respuestas invalidas, timeout y caida de Productos, ademas
-de Swagger, logs JSON y correlacion. Imprime la carpeta de evidencia y detiene
-los procesos que inicio. Estas son pruebas HTTP de integracion, no unitarias.
+Durante el desarrollo se realizaron comprobaciones HTTP automatizadas con dos
+APIs reales, bases temporales y un servidor simulado para fallas. No eran tests
+unitarios ni reemplazaban la integracion con los companeros. Esas herramientas
+se conservan fuera del repo y no son un requisito para ejecutar esta entrega.
