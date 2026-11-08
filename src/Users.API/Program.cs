@@ -9,6 +9,10 @@ using Users.API.ExceptionHandlers;
 using Users.API.Models;
 using Users.API.Services;
 using System.Text.Json.Nodes;
+using System.Text.Json;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Users.API.HealthChecks;
 using Microsoft.OpenApi;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -128,6 +132,16 @@ builder.Services.AddExceptionHandler<BusinessRuleExceptionHandler>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+// REGISTRA LAS COMPROBACIONES DE SALUD.
+builder.Services.AddHealthChecks()
+    .AddCheck(
+        "api",
+        () => HealthCheckResult.Healthy(),
+        tags: new[] { "live" })
+    .AddCheck<UsersDatabaseHealthCheck>(
+        "base de usuarios",
+        tags: new[] { "ready" });
+
 var app = builder.Build();
 
 // REGISTRA CADA PEDIDO HTTP CON SERILOG.
@@ -186,7 +200,42 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// PUBLICA EL ESTADO GENERAL DE LA API Y LA BASE.
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = EscribirEstadoSalud
+});
+
+// PUBLICA LA COMPROBACIÓN DE LA BASE DE DATOS.
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = EscribirEstadoSalud
+});
+
+// PUBLICA LA COMPROBACIÓN DE QUE LA API ESTÁ ENCENDIDA.
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live"),
+    ResponseWriter = EscribirEstadoSalud
+});
+
 app.Run();
+
+static Task EscribirEstadoSalud(
+    HttpContext context,
+    HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+
+    var respuesta = JsonSerializer.Serialize(new
+    {
+        status = report.Status.ToString()
+    });
+
+    return context.Response.WriteAsync(respuesta);
+}
+
 static void AgregarEjemploError(
     OpenApiOperation operation,
     string codigoRespuesta,
