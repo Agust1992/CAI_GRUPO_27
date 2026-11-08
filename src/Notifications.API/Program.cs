@@ -12,6 +12,8 @@ builder.Services.AddSingleton<DatabaseInitializer>();
 
 builder.Services.AddScoped<NotificationRepository>();
 
+builder.Services.AddScoped<NotificationService>();
+
 // CONFIGURA EL CLIENTE PARA COMUNICARSE CON USERS.API.
 var usersApiBaseUrl = builder.Configuration["UsersApi:BaseUrl"];
 
