@@ -237,7 +237,11 @@ app.Use(async (context, next) =>
     context.TraceIdentifier = correlationId;
     context.Response.Headers["X-Correlation-Id"] = correlationId;
 
-    await next();
+    using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
+    using (Serilog.Context.LogContext.PushProperty("Endpoint", context.Request.Path.Value ?? string.Empty))
+    {
+        await next();
+    }
 });
 
 // REGISTRA EL INICIO CON LA CORRELACIÓN YA ASIGNADA A LA RESPUESTA.

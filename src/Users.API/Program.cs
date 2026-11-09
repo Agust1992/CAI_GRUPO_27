@@ -53,7 +53,12 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
             CorrelationId = context.HttpContext.TraceIdentifier
         };
 
-        return new BadRequestObjectResult(response);
+        var result = new ObjectResult(response)
+        {
+            StatusCode = StatusCodes.Status400BadRequest
+        };
+        result.ContentTypes.Add("application/problem+json");
+        return result;
     };
 });
 
@@ -270,7 +275,11 @@ app.Use(async (context, next) =>
     context.TraceIdentifier = correlationId;
     context.Response.Headers["X-Correlation-Id"] = correlationId;
 
-    await next();
+    using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
+    using (Serilog.Context.LogContext.PushProperty("Endpoint", context.Request.Path.Value ?? string.Empty))
+    {
+        await next();
+    }
 });
 
 // REGISTRA EL INICIO CON LA CORRELACIÓN YA ASIGNADA A LA RESPUESTA.
