@@ -31,7 +31,6 @@ public class BusinessRuleExceptionHandler : IExceptionHandler
             "USR-001" => 409,
             "USR-003" => 401,
             "USR-004" or "USR-005" => 403,
-            "USR-007" => 404,
             _ => 400
         };
 

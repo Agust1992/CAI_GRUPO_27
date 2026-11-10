@@ -11,6 +11,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.OpenApi;
+using Notifications.API.Exceptions;
+using Notifications.API;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,8 +56,78 @@ builder.Services.AddOpenApi(options =>
             }
         }
 
+        void AgregarEjemploExito(string codigoEstado, string json)
+        {
+            if (!operation.Responses.TryGetValue(codigoEstado, out var respuesta)
+                || respuesta.Content is null
+                || !respuesta.Content.TryGetValue("application/json", out var contenido))
+            {
+                return;
+            }
+
+            contenido.Example = JsonNode.Parse(json);
+        }
+
+        void AgregarEjemplosErrorAlternativos(
+            string codigoEstado,
+            params (string nombre, string resumen, string json)[] ejemplos)
+        {
+            if (!operation.Responses.TryGetValue(codigoEstado, out var respuesta)
+                || respuesta.Content is null
+                || !respuesta.Content.TryGetValue("application/problem+json", out var contenido))
+            {
+                return;
+            }
+
+            contenido.Example = null;
+            contenido.Examples = new Dictionary<string, IOpenApiExample>();
+            foreach (var ejemplo in ejemplos)
+            {
+                contenido.Examples[ejemplo.nombre] = new OpenApiExample
+                {
+                    Summary = ejemplo.resumen,
+                    Value = JsonNode.Parse(ejemplo.json)
+                };
+            }
+        }
+
         if (metodo == "POST" && ruta == "api/notifications/send")
         {
+            AgregarEjemplo("405", """
+                {
+                  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.5",
+                  "title": "Method Not Allowed",
+                  "status": 405,
+                  "detail": "El método no está permitido para esta ruta.",
+                  "instance": "/api/notifications/send",
+                  "errorCode": "NTF-005",
+                  "errorMessage": "Método HTTP no permitido.",
+                  "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
+                }
+                """);
+
+            if (operation.RequestBody?.Content.TryGetValue("application/json", out var requestContent) == true)
+            {
+                requestContent.Example = JsonNode.Parse("""
+                    {
+                      "usuarioId": "e7ed291e-841e-4592-ab9e-4b1614550aea",
+                      "tipo": "Email",
+                      "mensaje": "Su orden fue confirmada."
+                    }
+                    """);
+            }
+
+            AgregarEjemploExito("201", """
+                {
+                  "id": "26c04593-3e3a-438f-a752-6ca1dc6ad044",
+                  "usuarioId": "e7ed291e-841e-4592-ab9e-4b1614550aea",
+                  "tipo": "Email",
+                  "mensaje": "Su orden fue confirmada.",
+                  "estado": "Enviada",
+                  "fechaEnvio": "2026-11-08T04:31:19.1996133Z"
+                }
+                """);
+
             AgregarEjemplo("415", """
                 {
                   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.13",
@@ -62,7 +135,7 @@ builder.Services.AddOpenApi(options =>
                   "status": 415,
                   "detail": "Enviá los datos con Content-Type application/json.",
                   "instance": "/api/notifications/send",
-                  "errorCode": "NTF-002",
+                  "errorCode": "NTF-006",
                   "errorMessage": "Tipo de contenido no soportado.",
                   "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
                 }
@@ -110,7 +183,46 @@ builder.Services.AddOpenApi(options =>
 
         if (metodo == "GET" && ruta == "api/notifications/{userId}")
         {
-            AgregarEjemplo("404", """
+            AgregarEjemplo("405", """
+                {
+                  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.5",
+                  "title": "Method Not Allowed",
+                  "status": 405,
+                  "detail": "El método no está permitido para esta ruta.",
+                  "instance": "/api/notifications/e7ed291e-841e-4592-ab9e-4b1614550aea",
+                  "errorCode": "NTF-005",
+                  "errorMessage": "Método HTTP no permitido.",
+                  "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
+                }
+                """);
+
+            AgregarEjemploExito("200", """
+                [
+                  {
+                    "id": "26c04593-3e3a-438f-a752-6ca1dc6ad044",
+                    "usuarioId": "e7ed291e-841e-4592-ab9e-4b1614550aea",
+                    "tipo": "Email",
+                    "mensaje": "Su orden fue confirmada.",
+                    "estado": "Enviada",
+                    "fechaEnvio": "2026-11-08T04:31:19.1996133Z"
+                  }
+                ]
+                """);
+
+            AgregarEjemplosErrorAlternativos("404",
+                ("NTF-001", "El usuario no existe", """
+                    {
+                      "type": "https://tools.ietf.org/html/rfc7231#section-6.5.4",
+                      "title": "Not Found",
+                      "status": 404,
+                      "detail": "El recurso solicitado no fue encontrado.",
+                      "instance": "/api/notifications/e7ed291e-841e-4592-ab9e-4b1614550aea",
+                      "errorCode": "NTF-001",
+                      "errorMessage": "Usuario no encontrado.",
+                      "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
+                    }
+                    """),
+                ("NTF-003", "El usuario no tiene notificaciones", """
                 {
                   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.4",
                   "title": "Not Found",
@@ -121,7 +233,7 @@ builder.Services.AddOpenApi(options =>
                   "errorMessage": "No se encontraron notificaciones para el usuario.",
                   "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
                 }
-                """);
+                """));
 
             AgregarEjemplo("500", """
                 {
@@ -174,34 +286,15 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
     {
-        var message = "Los datos de la notificación son inválidos.";
-
-        context.HttpContext.Items["ErrorCode"] = "NTF-002";
-
-        var errorResponse = new ErrorResponse
-        {
-            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            Title = "Bad Request",
-            Status = 400,
-            Detail = message,
-            Instance = context.HttpContext.Request.Path,
-            ErrorCode = "NTF-002",
-            ErrorMessage = message,
-            CorrelationId = context.HttpContext.TraceIdentifier
-        };
-
-        var result = new ObjectResult(errorResponse)
-        {
-            StatusCode = 400
-        };
-
-        result.ContentTypes.Add("application/problem+json");
-
-        return result;
+        throw new ValidationException(
+            "NTF-002",
+            "Los datos de la notificación son inválidos.");
     };
 });
 
 // REGISTRA LOS MANEJADORES DE ERRORES.
+builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 builder.Services.AddExceptionHandler<BusinessRuleExceptionHandler>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -270,6 +363,7 @@ app.Use(async (context, next) =>
 // REGISTRA EL INICIO CON LA CORRELACIÓN YA ASIGNADA A LA RESPUESTA.
 app.Use(async (context, next) =>
 {
+    var startedAt = Stopwatch.GetTimestamp();
     var logger = context.RequestServices
         .GetRequiredService<ILoggerFactory>()
         .CreateLogger("Notifications.API.RequestStart");
@@ -280,7 +374,16 @@ app.Use(async (context, next) =>
         context.Request.Path.Value,
         context.TraceIdentifier);
 
-    await next();
+    try
+    {
+        await next();
+    }
+    finally
+    {
+        ApiMetrics.Record(
+            context,
+            Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds);
+    }
 });
 // AGREGA EL FORMATO COMÚN A ERRORES HTTP SIN RESPUESTA.
 app.UseStatusCodePages(async statusContext =>
@@ -301,13 +404,13 @@ app.UseStatusCodePages(async statusContext =>
             "https://tools.ietf.org/html/rfc7231#section-6.5.4",
             "Not Found"),
         405 => (
-            "NTF-002",
+            "NTF-005",
             "Método HTTP no permitido.",
             "El método no está permitido para esta ruta.",
             "https://tools.ietf.org/html/rfc7231#section-6.5.5",
             "Method Not Allowed"),
         _ => (
-            "NTF-002",
+            "NTF-006",
             "Tipo de contenido no soportado.",
             "Enviá los datos con Content-Type application/json.",
             "https://tools.ietf.org/html/rfc7231#section-6.5.13",
@@ -351,14 +454,11 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapOpenApi();
+app.UseSwaggerUi(options =>
 {
-    app.MapOpenApi();
-    app.UseSwaggerUi(options =>
-    {
-        options.DocumentPath = "/openapi/v1.json";
-    });
-}
+    options.DocumentPath = "/openapi/v1.json";
+});
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

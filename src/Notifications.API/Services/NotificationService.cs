@@ -35,7 +35,7 @@ public class NotificationService
 
         if (!usuarioExiste)
         {
-            throw new BusinessRuleException(
+            throw new NotFoundException(
                 "NTF-001",
                 "Usuario no encontrado.");
         }
@@ -72,7 +72,7 @@ public class NotificationService
 
         if (!usuarioExiste)
         {
-            throw new BusinessRuleException(
+            throw new NotFoundException(
                 "NTF-001",
                 "Usuario no encontrado.");
         }
@@ -82,7 +82,7 @@ public class NotificationService
 
         if (notifications.Count == 0)
         {
-            throw new BusinessRuleException(
+            throw new NotFoundException(
                 "NTF-003",
                 "No se encontraron notificaciones para el usuario.");
         }

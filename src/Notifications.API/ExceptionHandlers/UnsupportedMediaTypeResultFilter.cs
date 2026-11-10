@@ -17,7 +17,7 @@ public sealed class UnsupportedMediaTypeResultFilter : IAlwaysRunResultFilter
         }
 
         var httpContext = context.HttpContext;
-        const string errorCode = "NTF-002";
+        const string errorCode = "NTF-006";
         const string errorMessage = "Tipo de contenido no soportado.";
         httpContext.Items["ErrorCode"] = errorCode;
 

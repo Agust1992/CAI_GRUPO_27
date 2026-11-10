@@ -25,18 +25,9 @@ public class BusinessRuleExceptionHandler : IExceptionHandler
             return false;
         }
 
-        var statusCode = 400;
-
-        if (businessException.ErrorCode == "NTF-001" ||
-            businessException.ErrorCode == "NTF-003")
-        {
-            statusCode = 404;
-        }
-
-        var title = statusCode == 404 ? "Not Found" : "Bad Request";
-        var type = statusCode == 404
-            ? "https://tools.ietf.org/html/rfc7231#section-6.5.4"
-            : "https://tools.ietf.org/html/rfc7231#section-6.5.1";
+        const int statusCode = StatusCodes.Status400BadRequest;
+        const string title = "Bad Request";
+        const string type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
 
         httpContext.Items["ErrorCode"] = businessException.ErrorCode;
 

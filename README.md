@@ -196,6 +196,8 @@ Las bases se crean localmente al iniciar cada API. La configuración deberá rev
 | Notifications | `NTF-002` | Datos de la notificación inválidos |
 | Notifications | `NTF-003` | El usuario no tiene notificaciones |
 | Notifications | `NTF-004` | Error interno al procesar la notificación |
+| Notifications | `NTF-005` | Método HTTP no permitido |
+| Notifications | `NTF-006` | Tipo de contenido no soportado |
 
 Las respuestas de error incluyen `errorCode`, `errorMessage` y `correlationId`. Los errores HTTP 404, 405 y 415 que genera el framework también usan ese formato. Los logs incluyen servicio, endpoint y correlación, y agregan el código de error cuando corresponde.
 
@@ -208,6 +210,10 @@ Las APIs implementadas exponen:
 - `/health/live`: indica si la API está encendida.
 
 Los servicios usan Serilog para registrar solicitudes y errores. Los registros JSON se guardan en la carpeta `logs` de cada servicio. El encabezado `X-Correlation-Id` permite relacionar una solicitud con sus registros y, cuando corresponde, con las llamadas entre servicios.
+
+Users.API y Notifications.API también publican métricas mediante `System.Diagnostics.Metrics`: contadores de solicitudes y errores, y un histograma de duración en milisegundos. Los instrumentos son `users.http.requests`, `users.http.errors`, `users.http.request.duration`, `notifications.http.requests`, `notifications.http.errors` y `notifications.http.request.duration`. Incluyen servicio, método, ruta, código HTTP y, cuando hay error, su código funcional.
+
+El detalle de excepciones inesperadas se controla con `ErrorHandling:IncludeExceptionMessage`: está habilitado en Development y deshabilitado en Production. Las respuestas no incluyen stack traces.
 
 ## Pruebas
 

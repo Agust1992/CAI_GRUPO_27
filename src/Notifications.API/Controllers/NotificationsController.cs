@@ -13,6 +13,10 @@ public class NotificationsController : ControllerBase
 {
     private readonly NotificationService _notificationService;
 
+    /// <summary>
+    /// Crea el controlador de notificaciones.
+    /// </summary>
+    /// <param name="notificationService">Servicio que registra y consulta notificaciones.</param>
     public NotificationsController(NotificationService notificationService)
     {
         _notificationService = notificationService;
@@ -25,11 +29,13 @@ public class NotificationsController : ControllerBase
     /// <param name="request">Datos de la notificación que se va a registrar.</param>
     /// <response code="201">La notificación se registró correctamente.</response>
     /// <response code="400">Los datos recibidos son inválidos (NTF-002).</response>
-    /// <response code="415">El tipo de contenido no está soportado (NTF-002).</response>
+    /// <response code="405">El método HTTP no está permitido (NTF-005).</response>
+    /// <response code="415">El tipo de contenido no está soportado (NTF-006).</response>
     /// <response code="404">El usuario destinatario no existe (NTF-001).</response>
     /// <response code="500">Ocurrió un error interno (NTF-004).</response>
     [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status201Created, "application/json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status405MethodNotAllowed, "application/problem+json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType, "application/problem+json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound, "application/problem+json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]
@@ -47,9 +53,11 @@ public class NotificationsController : ControllerBase
     /// </summary>
     /// <param name="userId">Identificador del usuario.</param>
     /// <response code="200">Se devolvió la lista de notificaciones.</response>
+    /// <response code="405">El método HTTP no está permitido (NTF-005).</response>
     /// <response code="404">El usuario no existe o no tiene notificaciones (NTF-001, NTF-003).</response>
     /// <response code="500">Ocurrió un error interno (NTF-004).</response>
     [ProducesResponseType(typeof(List<NotificationResponse>), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status405MethodNotAllowed, "application/problem+json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound, "application/problem+json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]
     [HttpGet("{userId:guid}")]

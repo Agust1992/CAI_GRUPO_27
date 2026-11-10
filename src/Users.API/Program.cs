@@ -9,10 +9,13 @@ using Users.API.ExceptionHandlers;
 using Users.API.Models;
 using Users.API.Services;
 using System.Text.Json;
+using Users.API.Exceptions;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Users.API.HealthChecks;
+using Users.API;
 using Microsoft.OpenApi;
+using System.Diagnostics;
 var builder = WebApplication.CreateBuilder(args);
 
 // CONFIGURA SERILOG PARA CONSOLA Y ARCHIVO JSON.
@@ -39,26 +42,9 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
     {
-        context.HttpContext.Items["ErrorCode"] = "USR-002";
-
-        var response = new ErrorResponse
-        {
-            Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            Title = "Bad Request",
-            Status = 400,
-            Detail = "Los datos del usuario son inválidos.",
-            Instance = context.HttpContext.Request.Path.Value ?? string.Empty,
-            ErrorCode = "USR-002",
-            ErrorMessage = "Los datos del usuario son inválidos.",
-            CorrelationId = context.HttpContext.TraceIdentifier
-        };
-
-        var result = new ObjectResult(response)
-        {
-            StatusCode = StatusCodes.Status400BadRequest
-        };
-        result.ContentTypes.Add("application/problem+json");
-        return result;
+        throw new ValidationException(
+            "USR-002",
+            "Los datos del usuario son inválidos.");
     };
 });
 
@@ -73,6 +59,10 @@ builder.Services.AddOpenApi(options =>
         // EJEMPLOS PARA REGISTRAR UN USUARIO.
         if (metodo == "POST" && ruta == "api/users/register")
         {
+            AgregarEjemploError(operation, "405", "Method Not Allowed", 405,
+                "El método no está permitido para esta ruta.",
+                "/api/users/register", "USR-008",
+                "Método HTTP no permitido.");
             AgregarEjemploError(operation, "415", "Unsupported Media Type", 415,
                 "Enviá los datos con Content-Type application/json.",
                 "/api/users/register", "USR-009",
@@ -126,6 +116,10 @@ builder.Services.AddOpenApi(options =>
         // EJEMPLOS PARA INICIAR SESIÓN.
         if (metodo == "POST" && ruta == "api/users/login")
         {
+            AgregarEjemploError(operation, "405", "Method Not Allowed", 405,
+                "El método no está permitido para esta ruta.",
+                "/api/users/login", "USR-008",
+                "Método HTTP no permitido.");
             AgregarEjemploError(operation, "415", "Unsupported Media Type", 415,
                 "Enviá los datos con Content-Type application/json.",
                 "/api/users/login", "USR-009",
@@ -182,6 +176,10 @@ builder.Services.AddOpenApi(options =>
         // EJEMPLOS PARA BUSCAR UN USUARIO POR ID.
         if (metodo == "GET" && ruta == "api/users/{id}")
         {
+            AgregarEjemploError(operation, "405", "Method Not Allowed", 405,
+                "El método no está permitido para esta ruta.",
+                "/api/users/{id}", "USR-008",
+                "Método HTTP no permitido.");
             if (operation.Responses.TryGetValue("200", out var respuestaGet) &&
                 respuestaGet.Content.TryGetValue(
                     "application/json",
@@ -224,6 +222,8 @@ builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 // REGISTRA EL MANEJADOR DE ERRORES DE NEGOCIO.
+builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 builder.Services.AddExceptionHandler<BusinessRuleExceptionHandler>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -303,6 +303,7 @@ app.Use(async (context, next) =>
 // REGISTRA EL INICIO CON LA CORRELACIÓN YA ASIGNADA A LA RESPUESTA.
 app.Use(async (context, next) =>
 {
+    var startedAt = Stopwatch.GetTimestamp();
     var logger = context.RequestServices
         .GetRequiredService<ILoggerFactory>()
         .CreateLogger("Users.API.RequestStart");
@@ -313,7 +314,16 @@ app.Use(async (context, next) =>
         context.Request.Path.Value,
         context.TraceIdentifier);
 
-    await next();
+    try
+    {
+        await next();
+    }
+    finally
+    {
+        ApiMetrics.Record(
+            context,
+            Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds);
+    }
 });
 // AGREGA EL FORMATO COMÚN A ERRORES HTTP SIN RESPUESTA.
 app.UseStatusCodePages(async statusContext =>
@@ -378,16 +388,13 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
+app.MapOpenApi();
 
-    // MUESTRA LA DOCUMENTACIÓN INTERACTIVA DE LA API.
-    app.UseSwaggerUi(options =>
-    {
-        options.DocumentPath = "/openapi/v1.json";
-    });
-}
+// MUESTRA LA DOCUMENTACIÓN INTERACTIVA DE LA API.
+app.UseSwaggerUi(options =>
+{
+    options.DocumentPath = "/openapi/v1.json";
+});
 
 app.UseHttpsRedirection();
 
