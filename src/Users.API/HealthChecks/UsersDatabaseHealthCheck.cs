@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Users.API.HealthChecks;
@@ -52,11 +52,16 @@ public class UsersDatabaseHealthCheck : IHealthCheck
                 "intentos_fallidos"
             };
 
-            var faltantes = columnasEsperadas
-                .Where(columna => !columnas.Contains(columna))
-                .ToArray();
+            var faltantes = new List<string>();
+            foreach (var columna in columnasEsperadas)
+            {
+                if (!columnas.Contains(columna))
+                {
+                    faltantes.Add(columna);
+                }
+            }
 
-            if (faltantes.Length > 0)
+            if (faltantes.Count > 0)
             {
                 return HealthCheckResult.Unhealthy(
                     $"La tabla users no existe o le faltan columnas: {string.Join(", ", faltantes)}.");

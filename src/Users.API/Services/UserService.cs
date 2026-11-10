@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Users.API.Data;
 using Users.API.Models;
 using Users.API.DTOs;
@@ -48,7 +48,14 @@ public class UserService
         user.PasswordHash =
             _passwordHasher.HashPassword(user, request.Password);
 
-        await _userRepository.CreateAsync(user);
+        var usuarioCreado = await _userRepository.CreateAsync(user);
+
+        if (!usuarioCreado)
+        {
+            throw new BusinessRuleException(
+                "USR-001",
+                "El email ya está registrado.");
+        }
 
         return new RegisterUserResponse
         {

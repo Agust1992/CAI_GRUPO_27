@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.Data.Sqlite;
 
 namespace Notifications.API.Data;
@@ -35,10 +35,11 @@ public class DatabaseInitializer
 
         connection.Execute(createTableSql);
 
-        var columnas = connection
-            .Query<ColumnInfo>("PRAGMA table_info(notifications);")
-            .Select(columna => columna.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var columnas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var columna in connection.Query<ColumnInfo>("PRAGMA table_info(notifications);"))
+        {
+            columnas.Add(columna.Name);
+        }
 
         if (!columnas.Contains("estado"))
         {

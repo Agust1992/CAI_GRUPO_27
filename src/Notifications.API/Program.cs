@@ -55,6 +55,19 @@ builder.Services.AddOpenApi(options =>
 
         if (metodo == "POST" && ruta == "api/notifications/send")
         {
+            AgregarEjemplo("415", """
+                {
+                  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.13",
+                  "title": "Unsupported Media Type",
+                  "status": 415,
+                  "detail": "Enviá los datos con Content-Type application/json.",
+                  "instance": "/api/notifications/send",
+                  "errorCode": "NTF-002",
+                  "errorMessage": "Tipo de contenido no soportado.",
+                  "correlationId": "7f46ea18-8a4c-42db-b43b-731f8b871234"
+                }
+                """);
+
             AgregarEjemplo("400", """
                 {
                   "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
@@ -226,8 +239,12 @@ app.UseExceptionHandler();
 // AGREGA UN IDENTIFICADOR A CADA PEDIDO.
 app.Use(async (context, next) =>
 {
-    var correlationId =
-        context.Request.Headers["X-Correlation-Id"].FirstOrDefault()?.Trim();
+    string? correlationId = null;
+    foreach (var valor in context.Request.Headers["X-Correlation-Id"])
+    {
+        correlationId = valor.Trim();
+        break;
+    }
 
     if (string.IsNullOrWhiteSpace(correlationId))
     {
@@ -236,6 +253,12 @@ app.Use(async (context, next) =>
 
     context.TraceIdentifier = correlationId;
     context.Response.Headers["X-Correlation-Id"] = correlationId;
+
+    context.Response.OnStarting(() =>
+    {
+        context.Response.Headers["X-Correlation-Id"] = correlationId;
+        return Task.CompletedTask;
+    });
 
     using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
     using (Serilog.Context.LogContext.PushProperty("Endpoint", context.Request.Path.Value ?? string.Empty))
@@ -363,15 +386,28 @@ app.MapHealthChecks("/health", new HealthCheckOptions
 // PUBLICA LA COMPROBACIÓN DE LA BASE DE DATOS.
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
-    Predicate = check => check.Tags.Contains("ready"),
+    Predicate = check => TieneEtiqueta(check.Tags, "ready"),
     ResponseWriter = EscribirEstadoSalud
 });
 
 // PUBLICA LA COMPROBACIÓN DE QUE LA API ESTÁ ENCENDIDA.
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
-    Predicate = check => check.Tags.Contains("live"),
+    Predicate = check => TieneEtiqueta(check.Tags, "live"),
     ResponseWriter = EscribirEstadoSalud
 });
 
 app.Run();
+
+static bool TieneEtiqueta(IEnumerable<string> etiquetas, string etiquetaBuscada)
+{
+    foreach (var etiqueta in etiquetas)
+    {
+        if (string.Equals(etiqueta, etiquetaBuscada, StringComparison.Ordinal))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}

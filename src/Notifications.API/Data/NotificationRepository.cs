@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Notifications.API.Models;
@@ -75,18 +75,24 @@ public class NotificationRepository
             sql,
             new { UsuarioId = usuarioId.ToString() });
 
-        return filas.Select(fila => new Notification
+        var notificaciones = new List<Notification>();
+        foreach (var fila in filas)
         {
-            Id = Guid.Parse(fila.Id),
-            UsuarioId = Guid.Parse(fila.UsuarioId),
-            Tipo = fila.Tipo,
-            Mensaje = fila.Mensaje,
-            Estado = fila.Estado,
-            FechaEnvio = DateTime.Parse(
-                fila.FechaEnvio,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.RoundtripKind)
-        }).ToList();
+            notificaciones.Add(new Notification
+            {
+                Id = Guid.Parse(fila.Id),
+                UsuarioId = Guid.Parse(fila.UsuarioId),
+                Tipo = fila.Tipo,
+                Mensaje = fila.Mensaje,
+                Estado = fila.Estado,
+                FechaEnvio = DateTime.Parse(
+                    fila.FechaEnvio,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.RoundtripKind)
+            });
+        }
+
+        return notificaciones;
     }
 
     // Recibe los datos de SQLite antes de convertirlos al modelo.

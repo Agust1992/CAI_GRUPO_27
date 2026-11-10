@@ -73,6 +73,10 @@ builder.Services.AddOpenApi(options =>
         // EJEMPLOS PARA REGISTRAR UN USUARIO.
         if (metodo == "POST" && ruta == "api/users/register")
         {
+            AgregarEjemploError(operation, "415", "Unsupported Media Type", 415,
+                "Enviá los datos con Content-Type application/json.",
+                "/api/users/register", "USR-009",
+                "Tipo de contenido no soportado.");
             if (operation.RequestBody is not null &&
                 operation.RequestBody.Content.TryGetValue(
                     "application/json",
@@ -122,6 +126,10 @@ builder.Services.AddOpenApi(options =>
         // EJEMPLOS PARA INICIAR SESIÓN.
         if (metodo == "POST" && ruta == "api/users/login")
         {
+            AgregarEjemploError(operation, "415", "Unsupported Media Type", 415,
+                "Enviá los datos con Content-Type application/json.",
+                "/api/users/login", "USR-009",
+                "Tipo de contenido no soportado.");
             if (operation.RequestBody is not null &&
                 operation.RequestBody.Content.TryGetValue(
                     "application/json",
@@ -264,8 +272,12 @@ app.UseExceptionHandler();
 // AGREGA UN IDENTIFICADOR A CADA PEDIDO.
 app.Use(async (context, next) =>
 {
-    var correlationId =
-        context.Request.Headers["X-Correlation-Id"].FirstOrDefault()?.Trim();
+    string? correlationId = null;
+    foreach (var valor in context.Request.Headers["X-Correlation-Id"])
+    {
+        correlationId = valor.Trim();
+        break;
+    }
 
     if (string.IsNullOrWhiteSpace(correlationId))
     {
@@ -274,6 +286,12 @@ app.Use(async (context, next) =>
 
     context.TraceIdentifier = correlationId;
     context.Response.Headers["X-Correlation-Id"] = correlationId;
+
+    context.Response.OnStarting(() =>
+    {
+        context.Response.Headers["X-Correlation-Id"] = correlationId;
+        return Task.CompletedTask;
+    });
 
     using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
     using (Serilog.Context.LogContext.PushProperty("Endpoint", context.Request.Path.Value ?? string.Empty))
@@ -386,18 +404,31 @@ app.MapHealthChecks("/health", new HealthCheckOptions
 // PUBLICA LA COMPROBACIÓN DE LA BASE DE DATOS.
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
-    Predicate = check => check.Tags.Contains("ready"),
+    Predicate = check => TieneEtiqueta(check.Tags, "ready"),
     ResponseWriter = EscribirEstadoSalud
 });
 
 // PUBLICA LA COMPROBACIÓN DE QUE LA API ESTÁ ENCENDIDA.
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
-    Predicate = check => check.Tags.Contains("live"),
+    Predicate = check => TieneEtiqueta(check.Tags, "live"),
     ResponseWriter = EscribirEstadoSalud
 });
 
 app.Run();
+
+static bool TieneEtiqueta(IEnumerable<string> etiquetas, string etiquetaBuscada)
+{
+    foreach (var etiqueta in etiquetas)
+    {
+        if (string.Equals(etiqueta, etiquetaBuscada, StringComparison.Ordinal))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 static Task EscribirEstadoSalud(
     HttpContext context,
@@ -444,6 +475,7 @@ static void AgregarEjemploError(
             403 => "https://tools.ietf.org/html/rfc7231#section-6.5.3",
             409 => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
             500 => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+            415 => "https://tools.ietf.org/html/rfc7231#section-6.5.13",
 
             _ => "https://tools.ietf.org/html/rfc7231"
         },

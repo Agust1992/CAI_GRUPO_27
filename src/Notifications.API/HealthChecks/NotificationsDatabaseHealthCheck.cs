@@ -42,11 +42,16 @@ public class NotificationsDatabaseHealthCheck : IHealthCheck
             {
                 "id", "usuario_id", "tipo", "mensaje", "estado", "fecha_envio"
             };
-            var columnasFaltantes = columnasEsperadas
-                .Where(columna => !columnas.Contains(columna))
-                .ToArray();
+            var columnasFaltantes = new List<string>();
+            foreach (var columna in columnasEsperadas)
+            {
+                if (!columnas.Contains(columna))
+                {
+                    columnasFaltantes.Add(columna);
+                }
+            }
 
-            if (columnasFaltantes.Length > 0)
+            if (columnasFaltantes.Count > 0)
             {
                 return HealthCheckResult.Unhealthy(
                     columnas.Count == 0

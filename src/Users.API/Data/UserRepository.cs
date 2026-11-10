@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Users.API.Models;
@@ -113,7 +113,7 @@ public class UserRepository
     }
 
     // Guarda un usuario nuevo en la tabla users.
-    public async Task CreateAsync(User user)
+    public async Task<bool> CreateAsync(User user)
     {
         using var connection = CreateConnection();
 
@@ -125,7 +125,7 @@ public class UserRepository
             VALUES (
                 @Id, @Nombre, @Apellido, @Email, @PasswordHash,
                 @FechaRegistro, @Activo, @IntentosFallidos
-            );
+            ) ON CONFLICT(email) DO NOTHING;
             """;
 
         var datos = new
@@ -142,7 +142,8 @@ public class UserRepository
             user.IntentosFallidos
         };
 
-        await connection.ExecuteAsync(sql, datos);
+        var filasAfectadas = await connection.ExecuteAsync(sql, datos);
+        return filasAfectadas == 1;
     }
 
     // Recibe los datos como SQLite los entrega.

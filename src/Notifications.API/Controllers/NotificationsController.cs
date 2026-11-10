@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Notifications.API.DTOs;
 using Notifications.API.Services;
 
@@ -25,10 +25,12 @@ public class NotificationsController : ControllerBase
     /// <param name="request">Datos de la notificación que se va a registrar.</param>
     /// <response code="201">La notificación se registró correctamente.</response>
     /// <response code="400">Los datos recibidos son inválidos (NTF-002).</response>
+    /// <response code="415">El tipo de contenido no está soportado (NTF-002).</response>
     /// <response code="404">El usuario destinatario no existe (NTF-001).</response>
     /// <response code="500">Ocurrió un error interno (NTF-004).</response>
     [ProducesResponseType(typeof(NotificationResponse), StatusCodes.Status201Created, "application/json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status415UnsupportedMediaType, "application/problem+json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound, "application/problem+json")]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]
     [HttpPost("send")]
